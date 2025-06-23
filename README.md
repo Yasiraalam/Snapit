@@ -23,6 +23,46 @@ The IUST Thread App is a native Android application built using Kotlin and Jetpa
   - Firebase Firestore for storing user data, threads, and comments
   - Firebase Storage for storing images associated with threads
 
+## Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+You will need to have Java Development Kit (JDK) 17 installed on your machine. This project requires it to build.
+
+### Installation
+
+1.  **Clone the repo**
+    ```sh
+    git clone https://github.com/Yasiraalam/iust-Thread.git
+    ```
+2.  **Install JDK 17**
+
+    *   **macOS (using Homebrew)**
+        If you have [Homebrew](https://brew.sh/) installed, you can run the following command:
+        ```sh
+        brew install openjdk@17
+        ```
+        After installation, make sure to set your `JAVA_HOME` environment variable. You can usually find the correct path by running `/usr/libexec/java_home -v 17`. Then add the following to your shell's configuration file (e.g., `~/.zshrc` or `~/.bash_profile`):
+        ```sh
+        export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        ```
+
+    *   **Other Systems**
+        You can download JDK 17 from a source like [Adoptium](https://adoptium.net/temurin/releases/?version=17). Make sure to set the `JAVA_HOME` environment variable to the installation directory.
+
+3.  **Build the project**
+    Once the JDK is installed and configured, you can build the project using the Gradle wrapper. First, make sure the wrapper is executable:
+    ```sh
+    chmod +x gradlew
+    ```
+    Then, build the project:
+    ```sh
+    ./gradlew build
+    ```
+
 ## Demo Pics 
 <img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/adb87dd3-846d-4307-b412-4a6585c9f2e3" alt="Description of the image" width="220" height="450"/>
 <img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/f6af99e1-5618-47d5-97de-3dea2b60f02b" alt="Description of the image" width="220" height="450"/>
