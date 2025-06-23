@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -19,25 +18,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.yasir.iustthread.R
 import com.yasir.iustthread.internetConnectiviy.ConnectivityObserver
 import com.yasir.iustthread.internetConnectiviy.NetworkConnectivityObserver
-import com.yasir.iustthread.screens.AddThreads
-import com.yasir.iustthread.screens.BottomNav
-import com.yasir.iustthread.screens.Home
-import com.yasir.iustthread.screens.Login
-import com.yasir.iustthread.screens.Notification
-import com.yasir.iustthread.screens.OtherUsers
-import com.yasir.iustthread.screens.Profile
-import com.yasir.iustthread.screens.Register
-import com.yasir.iustthread.screens.Search
-import com.yasir.iustthread.screens.Splash
+import com.yasir.iustthread.presentation.addpost.composable.AddThreads
+import com.yasir.iustthread.presentation.home.composable.BottomNav
+import com.yasir.iustthread.presentation.home.composable.Home
+import com.yasir.iustthread.presentation.login.composable.Login
+import com.yasir.iustthread.presentation.home.composable.Notification
+import com.yasir.iustthread.presentation.home.composable.OtherUsers
+import com.yasir.iustthread.presentation.profile.composable.Profile
+import com.yasir.iustthread.presentation.profile.composable.Register
+import com.yasir.iustthread.presentation.home.composable.Search
+import com.yasir.iustthread.presentation.home.composable.Splash
 
 @Composable
 fun NavGraph(
