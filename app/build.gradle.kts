@@ -60,6 +60,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -67,27 +68,28 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-     //TODO:navigation
+    
+    // Navigation
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
-    //TODO:contraintslayout
+    // ConstraintLayout
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
-    // Import the Firebase BoM
+    // Firebase BoM - Use this for all Firebase dependencies
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
-    // TODO: Add the dependencies for Firebase products you want to use
-    // TODO: When using the BoM, don't specify versions in Firebase dependencies
+    
+    // Firebase dependencies (versions managed by BoM)
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
-    //TODO:coil
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    
+    // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
-    //TODO:livedata
+    
+    // LiveData
     implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
-
-
-
 }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.Home
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -25,9 +26,11 @@ import androidx.navigation.compose.composable
 import com.yasir.iustthread.R
 import com.yasir.iustthread.internetConnectiviy.ConnectivityObserver
 import com.yasir.iustthread.internetConnectiviy.NetworkConnectivityObserver
+import com.yasir.iustthread.navigation.Routes.Home
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
+import com.yasir.iustthread.presentation.comments.composable.CommentsScreen
 import com.yasir.iustthread.presentation.home.composable.BottomNav
-import com.yasir.iustthread.presentation.home.composable.Home
+import com.yasir.iustthread.presentation.home.composable.HomeScreen
 import com.yasir.iustthread.presentation.login.composable.Login
 import com.yasir.iustthread.presentation.home.composable.Notification
 import com.yasir.iustthread.presentation.home.composable.OtherUsers
@@ -59,7 +62,7 @@ fun NavGraph(
                 }
 
                 composable(Routes.Home.routes){
-                    Home(navController)
+                    HomeScreen(navController)
 
                 }
 
@@ -90,6 +93,11 @@ fun NavGraph(
                 composable(Routes.OtherUsers.routes){
                     val data = it.arguments!!.getString("data")
                     OtherUsers(navController,data!!)
+                }
+                
+                composable(Routes.Comments.routes){
+                    val threadId = it.arguments!!.getString("threadId")
+                    CommentsScreen(navController, threadId!!)
                 }
             }
         } else {
