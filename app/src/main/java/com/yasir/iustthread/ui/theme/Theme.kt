@@ -57,8 +57,10 @@ fun IustThreadTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Make status bar transparent to show system UI
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            // Set light status bar icons for better visibility
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
