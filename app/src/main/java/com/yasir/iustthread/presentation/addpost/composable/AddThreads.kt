@@ -4,7 +4,6 @@ package com.yasir.iustthread.presentation.addpost.composable
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -45,6 +44,7 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.presentation.addpost.AddThreadViewModel
 import com.yasir.iustthread.R
+import com.yasir.iustthread.ui.theme.PinkColor
 
 @Composable
 fun AddThreads(navHostController: NavHostController) {
@@ -55,19 +55,19 @@ fun AddThreads(navHostController: NavHostController) {
     var thread by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val loading = remember { mutableStateOf(false) }
-
+    
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
-
+    
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
     }
-
+    
     val permissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -101,12 +101,12 @@ fun AddThreads(navHostController: NavHostController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.threads_logo),
+                        imageVector = Icons.Default.Star,
                         contentDescription = null,
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                Color(0xFFE91E63),
+                                PinkColor,
                                 CircleShape
                             )
                             .padding(6.dp),
@@ -117,7 +117,7 @@ fun AddThreads(navHostController: NavHostController) {
                         text = "Add Thread",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1F2937)
+                        color = PinkColor
                     )
                 }
             },
@@ -126,7 +126,7 @@ fun AddThreads(navHostController: NavHostController) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color(0xFF1F2937)
+                        tint = PinkColor
                     )
                 }
             },
@@ -136,7 +136,7 @@ fun AddThreads(navHostController: NavHostController) {
                         modifier = Modifier
                             .size(24.dp)
                             .padding(end = 16.dp),
-                        color = Color(0xFFE91E63),
+                        color = PinkColor,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -164,7 +164,7 @@ fun AddThreads(navHostController: NavHostController) {
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63)
+                            containerColor = PinkColor
                         ),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.padding(end = 8.dp)
@@ -181,7 +181,7 @@ fun AddThreads(navHostController: NavHostController) {
                 containerColor = Color.White
             )
         )
-
+        
         // Main Content
         Column(
             modifier = Modifier
@@ -208,36 +208,36 @@ fun AddThreads(navHostController: NavHostController) {
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
-
+                    
                     Spacer(modifier = Modifier.width(12.dp))
-
+                    
                     Column {
                         Text(
                             text = SharedPref.getUserName(context),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF1F2937)
+                            color = Color.Black
                         )
                         Text(
                             text = "Create a new thread",
                             fontSize = 14.sp,
-                            color = Color(0xFF6B7280)
+                            color = Color.Gray
                         )
                     }
                 }
             }
-
+            
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             // Thread Content Section
             Text(
                 text = "Thread Content *",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937),
+                color = PinkColor,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-
+            
             OutlinedTextField(
                 value = thread,
                 onValueChange = { thread = it },
@@ -251,7 +251,7 @@ fun AddThreads(navHostController: NavHostController) {
                     .fillMaxWidth()
                     .height(120.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE91E63),
+                    focusedBorderColor = PinkColor,
                     unfocusedBorderColor = Color(0xFFD1D5DB),
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
@@ -259,9 +259,9 @@ fun AddThreads(navHostController: NavHostController) {
                 shape = RoundedCornerShape(8.dp),
                 maxLines = 5
             )
-
+            
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             // Photo Section
             Text(
                 text = "Photo",
@@ -270,7 +270,7 @@ fun AddThreads(navHostController: NavHostController) {
                 color = Color(0xFF1F2937),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-
+            
             if (imageUri == null) {
                 Box(
                     modifier = Modifier
@@ -300,7 +300,7 @@ fun AddThreads(navHostController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.image),
+                            painter = painterResource(R.drawable.logo),
                             contentDescription = null,
                             tint = Color(0xFF9CA3AF),
                             modifier = Modifier.size(32.dp)
@@ -347,9 +347,9 @@ fun AddThreads(navHostController: NavHostController) {
                     }
                 }
             }
-
+            
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             // Action Buttons Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -372,14 +372,14 @@ fun AddThreads(navHostController: NavHostController) {
                     }
                 )
                 ActionButton(
-                    icon = painterResource(R.drawable.threads_logo),
+                    icon = painterResource(R.drawable.chat),
                     text = "Anyone can reply",
                     onClick = { /* Handle reply settings */ }
                 )
             }
-
+            
             Spacer(modifier = Modifier.height(24.dp))
-
+            
             // Tips Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -408,14 +408,14 @@ fun AddThreads(navHostController: NavHostController) {
                             color = Color(0xFF1F2937)
                         )
                     }
-
+                    
                     val tips = listOf(
                         "Write engaging and clear content",
                         "Add relevant images to your thread",
                         "Keep your message concise and meaningful",
                         "Engage with your community respectfully"
                     )
-
+                    
                     tips.forEach { tip ->
                         Row(
                             modifier = Modifier.padding(vertical = 2.dp),
