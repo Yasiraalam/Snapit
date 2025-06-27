@@ -1,7 +1,7 @@
-# IUST Thread App
+# Snapit App
 
 ## Description
-The IUST Thread App is a native Android application built using Kotlin and Jetpack Compose. It provides a platform for students and faculty of the Islamic University of Science and Technology (IUST) to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments.
+Snapit Thread App is a native Android application built using Kotlin and Jetpack Compose. It provides a platform for students and faculty of the Islamic University of Science and Technology (IUST) to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments.
 
 ## Features
 - User authentication: Users can sign up, log in, and log out securely using Firebase Authentication.
