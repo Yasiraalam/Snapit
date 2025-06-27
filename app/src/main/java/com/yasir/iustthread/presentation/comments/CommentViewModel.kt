@@ -10,6 +10,7 @@ import com.yasir.iustthread.domain.model.CommentModel
 import com.yasir.iustthread.domain.model.UserModel
 import com.yasir.iustthread.utils.SharedPref
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -21,21 +22,31 @@ class CommentViewModel : ViewModel() {
     private val commentsRef = database.getReference("comments")
     private val usersRef = database.getReference("Users")
     
+    private var commentsListener: com.google.firebase.database.ValueEventListener? = null
+    
     private val _commentsAndUsers = MutableLiveData<List<Pair<CommentModel, UserModel>>>()
     val commentsAndUsers: LiveData<List<Pair<CommentModel, UserModel>>> = _commentsAndUsers
     
     private val _isCommentAdded = MutableLiveData<Boolean>()
     val isCommentAdded: LiveData<Boolean> = _isCommentAdded
     
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+    
     fun fetchComments(threadId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                withContext(Dispatchers.Main) {
+                    _isLoading.value = true
+                }
+                
                 val snapshot = commentsRef.orderByChild("threadId").equalTo(threadId).get().await()
                 val result = mutableListOf<Pair<CommentModel, UserModel>>()
                 
                 if (snapshot.childrenCount == 0L) {
                     withContext(Dispatchers.Main) {
                         _commentsAndUsers.value = result
+                        _isLoading.value = false
                     }
                     return@launch
                 }
@@ -48,15 +59,26 @@ class CommentViewModel : ViewModel() {
                     }
                 }
                 
+                // Sort comments by timestamp (newest first)
+                result.sortByDescending { it.first.timeStamp }
+                
                 withContext(Dispatchers.Main) {
                     _commentsAndUsers.value = result
+                    _isLoading.value = false
                 }
             } catch (e: Exception) {
+                // Log the error for debugging
+                e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     _commentsAndUsers.value = emptyList()
+                    _isLoading.value = false
                 }
             }
         }
+    }
+    
+    fun refreshComments(threadId: String) {
+        fetchComments(threadId)
     }
     
     private suspend fun fetchUserForComment(comment: CommentModel): UserModel {
@@ -94,10 +116,18 @@ class CommentViewModel : ViewModel() {
                     likes = 0
                 )
                 
+                // Write to Firebase
                 commentsRef.child(commentId).setValue(comment).await()
                 updateThreadCommentCount(threadId)
                 
+                // Fetch current user data for the new comment
+                val currentUser = fetchUserForComment(comment)
+                
+                // Immediately add the new comment to the LiveData
                 withContext(Dispatchers.Main) {
+                    val currentComments = _commentsAndUsers.value ?: emptyList()
+                    val updatedComments = (listOf(comment to currentUser) + currentComments).sortedByDescending { it.first.timeStamp }
+                    _commentsAndUsers.value = updatedComments
                     _isCommentAdded.value = true
                 }
             } catch (e: Exception) {
@@ -143,10 +173,85 @@ class CommentViewModel : ViewModel() {
                     )
                     
                     commentRef.setValue(updatedComment).await()
+                    
+                    // Refresh comments to update the UI
+                    val currentComments = _commentsAndUsers.value ?: emptyList()
+                    val updatedComments = currentComments.map { (comment, user) ->
+                        if (comment.commentId == commentId) {
+                            updatedComment to user
+                        } else {
+                            comment to user
+                        }
+                    }
+                    
+                    withContext(Dispatchers.Main) {
+                        _commentsAndUsers.value = updatedComments
+                    }
                 }
             } catch (e: Exception) {
                 // Handle error silently
             }
+        }
+    }
+    
+    fun resetCommentAddedState() {
+        _isCommentAdded.value = false
+    }
+    
+    fun listenForComments(threadId: String) {
+        // Remove existing listener if any
+        commentsListener?.let { listener ->
+            commentsRef.removeEventListener(listener)
+        }
+        
+        val commentsQuery = commentsRef.orderByChild("threadId").equalTo(threadId)
+        
+        commentsListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        val result = mutableListOf<Pair<CommentModel, UserModel>>()
+                        
+                        if (snapshot.childrenCount == 0L) {
+                            withContext(Dispatchers.Main) {
+                                _commentsAndUsers.value = result
+                            }
+                            return@launch
+                        }
+                        
+                        for (commentSnapshot in snapshot.children) {
+                            val comment = commentSnapshot.getValue(CommentModel::class.java)
+                            comment?.let {
+                                val user = fetchUserForComment(it)
+                                result.add(it to user)
+                            }
+                        }
+                        
+                        // Sort comments by timestamp (newest first)
+                        result.sortByDescending { it.first.timeStamp }
+                        
+                        withContext(Dispatchers.Main) {
+                            _commentsAndUsers.value = result
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                // Handle error
+            }
+        }
+        
+        commentsQuery.addValueEventListener(commentsListener!!)
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        // Clean up Firebase listener
+        commentsListener?.let { listener ->
+            commentsRef.removeEventListener(listener)
         }
     }
 } 

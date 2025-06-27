@@ -1,5 +1,6 @@
 package com.yasir.iustthread.navigation
 
+import NotificationScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +37,6 @@ import com.yasir.iustthread.presentation.comments.composable.CommentsScreen
 import com.yasir.iustthread.presentation.home.composable.BottomNav
 import com.yasir.iustthread.presentation.home.composable.HomeScreen
 import com.yasir.iustthread.presentation.login.composable.Login
-import com.yasir.iustthread.presentation.home.composable.Notification
 import com.yasir.iustthread.presentation.home.composable.OtherUsers
 import com.yasir.iustthread.presentation.profile.composable.Profile
 import com.yasir.iustthread.presentation.profile.composable.Register
@@ -73,7 +73,7 @@ fun NavGraph(
                 }
 
                 composable(Routes.Notification.routes){
-                    Notification()
+                    NotificationScreen()
                 }
 
                 composable(Routes.Search.routes){

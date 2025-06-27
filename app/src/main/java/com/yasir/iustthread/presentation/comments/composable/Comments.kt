@@ -49,13 +49,14 @@ fun CommentsScreen(
     
     val commentsAndUsers by commentViewModel.commentsAndUsers.observeAsState(initial = emptyList())
     val isCommentAdded by commentViewModel.isCommentAdded.observeAsState(initial = false)
+    val isLoading by commentViewModel.isLoading.observeAsState(initial = false)
     
     var commentText by remember { mutableStateOf("") }
     var isAddingComment by remember { mutableStateOf(false) }
     
-    // Fetch comments when screen loads
+    // Listen for comments in real-time when screen loads
     LaunchedEffect(threadId) {
-        commentViewModel.fetchComments(threadId)
+        commentViewModel.listenForComments(threadId)
     }
     
     // Reset comment text when comment is added successfully
@@ -63,6 +64,8 @@ fun CommentsScreen(
         if (isCommentAdded) {
             commentText = ""
             isAddingComment = false
+            // Reset the isCommentAdded state
+            commentViewModel.resetCommentAddedState()
         }
     }
     
@@ -101,7 +104,8 @@ fun CommentsScreen(
                         commentViewModel.addComment(threadId, commentText, context)
                     }
                 },
-                isAddingComment = isAddingComment
+                isAddingComment = isAddingComment,
+                isLoading = isLoading
             )
         }
     ) { paddingValues ->
@@ -290,7 +294,8 @@ fun CommentInputBar(
     commentText: String,
     onCommentTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    isAddingComment: Boolean
+    isAddingComment: Boolean,
+    isLoading: Boolean
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -347,6 +352,7 @@ fun CommentInputBar(
                     )
                 },
                 modifier = Modifier.weight(1f),
+                enabled = !isLoading,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFE91E63),
                     unfocusedBorderColor = Color(0xFFE5E7EB)
@@ -363,7 +369,7 @@ fun CommentInputBar(
             // Send Button
             IconButton(
                 onClick = onSendClick,
-                enabled = commentText.isNotBlank() && !isAddingComment
+                enabled = commentText.isNotBlank() && !isAddingComment && !isLoading
             ) {
                 if (isAddingComment) {
                     CircularProgressIndicator(
@@ -375,7 +381,7 @@ fun CommentInputBar(
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send",
-                        tint = if (commentText.isNotBlank()) Color(0xFFE91E63) else Color(0xFF9CA3AF),
+                        tint = if (commentText.isNotBlank() && !isLoading) Color(0xFFE91E63) else Color(0xFF9CA3AF),
                         modifier = Modifier.size(24.dp)
                     )
                 }

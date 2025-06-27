@@ -1,5 +1,6 @@
 package com.yasir.iustthread.presentation.home.composable
 
+import NotificationScreen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -78,7 +79,7 @@ fun BottomNav(navController: NavHostController) {
                 HomeScreen(navController)
             }
             composable(Routes.Notification.routes) {
-                Notification()
+                NotificationScreen()
             }
             composable(Routes.Search.routes) {
                 Search(navController)
