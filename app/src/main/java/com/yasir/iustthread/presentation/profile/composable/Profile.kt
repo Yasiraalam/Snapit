@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
@@ -145,88 +146,85 @@ fun Profile(navHostController: NavHostController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // Top App Bar
-        TopAppBar(
-            title = {
-                Text(
-                    text = user.username.ifEmpty { "username" },
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = { 
-                    navHostController.navigate(Routes.Home.routes) {
-                        popUpTo(Routes.Profile.routes) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = user.username.ifEmpty { "username" },
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black
                     )
-                }
-            },
-            actions = {
-                Box(
-                    modifier = Modifier.padding(12.dp),
-                    contentAlignment = Alignment.Center
-                ){
-                    IconButton(onClick = { showDropdownMenu = true }) {
+                },
+                navigationIcon = {
+                    IconButton(onClick = { 
+                        navHostController.navigate(Routes.Home.routes) {
+                            popUpTo(Routes.Profile.routes) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options",
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
                             tint = Color.Black
                         )
                     }
-                    
-                    // Dropdown Menu
-                    DropdownMenu(
-                        expanded = showDropdownMenu,
-                        onDismissRequest = { showDropdownMenu = false },
-                        modifier = Modifier.background(Color.White)
-                    ) {
-                        DropdownMenuItem(
-                            text = { 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.close_icon),
-                                        contentDescription = null,
-                                        tint = Color.Red,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Logout",
-                                        color = Color.Red,
-                                        fontWeight = FontWeight.Medium
-                                    )
+                },
+                actions = {
+                    Box(
+                        modifier = Modifier.padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ){
+                        IconButton(onClick = { showDropdownMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = Color.Black
+                            )
+                        }
+                        
+                        // Dropdown Menu
+                        DropdownMenu(
+                            expanded = showDropdownMenu,
+                            onDismissRequest = { showDropdownMenu = false },
+                            modifier = Modifier.background(Color.White)
+                        ) {
+                            DropdownMenuItem(
+                                text = { 
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.close_icon),
+                                            contentDescription = null,
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Logout",
+                                            color = Color.Red,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    showLogoutDialog = true
                                 }
-                            },
-                            onClick = {
-                                showDropdownMenu = false
-                                showLogoutDialog = true
-                            }
-                        )
+                            )
+                        }
                     }
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.White
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        )
-
+        }
+    ) { paddingValues ->
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
@@ -251,8 +249,11 @@ fun Profile(navHostController: NavHostController) {
                 }
             )
         }
+        
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             if (isInitialLoading) {
                 Box(
@@ -358,12 +359,12 @@ fun Profile(navHostController: NavHostController) {
                                     color = Color.Gray
                                 )
                                 Text(
-                                    text = "Currently in: Tokyo 🗾",
+                                    text = "Currently in: Kashmir 🗾",
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
                                 Text(
-                                    text = "🌐 sarah@photography.com",
+                                    text = "🌐 yasir@snappit.com",
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
@@ -527,6 +528,30 @@ fun PostGridItem(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
+        } else {
+            // Show placeholder for posts without images
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Create,
+                        contentDescription = null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Text Post",
+                        fontSize = 10.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
 
         // Like count overlay (bottom right) - only show if there are likes
@@ -560,6 +585,8 @@ fun PostGridItem(
                 }
             }
         }
+
+        // Comment count overlay (bottom left) - only show if there are comments
         if (thread.comments.isNotEmpty() && thread.comments != "0") {
             Box(
                 modifier = Modifier
@@ -604,6 +631,7 @@ fun UserPostsFeed(
     startIndex: Int
 ) {
     val listState = rememberLazyListState()
+    val userViewModel: UserViewModel = viewModel()
     
     LaunchedEffect(startIndex) {
         if (threads.isNotEmpty() && startIndex < threads.size) {
@@ -653,66 +681,187 @@ fun UserPostsFeed(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(threads) { thread ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            // Post content
-                            Text(
-                                text = thread.thread, 
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.Black
+                    PostCard(
+                        thread = thread,
+                        onDelete = {
+                            userViewModel.deleteThread(thread)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PostCard(
+    thread: com.yasir.iustthread.domain.model.ThreadModel,
+    onDelete: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Header with delete menu
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Your Post",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(20.dp)
                             )
-                            
-                            // Post image if available
-                            if (thread.image.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                AsyncImage(
-                                    model = thread.image,
-                                    contentDescription = "Post image",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            
-                            Spacer(modifier = Modifier.height(12.dp))
-                            
-                            // Post stats
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "❤️ ${thread.likes} likes",
-                                    fontSize = 14.sp,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "💬 ${thread.comments} comments",
-                                    fontSize = 14.sp,
-                                    color = Color.Gray
-                                )
-                            }
-                            
-                            // Timestamp
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Posted ${formatTimeAgo(thread.timeStamp)}",
-                                fontSize = 12.sp,
-                                color = Color.Gray
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            modifier = Modifier.background(Color.White)
+                        ) {
+                            DropdownMenuItem(
+                                text = { 
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = null,
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Delete Post",
+                                            color = Color.Red,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    showDeleteDialog = true
+                                }
                             )
                         }
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Post content
+                Text(
+                    text = thread.thread, 
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+                
+                // Post image if available
+                if (thread.image.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    AsyncImage(
+                        model = thread.image,
+                        contentDescription = "Post image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Post stats
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "❤️ ${thread.likes} likes",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "💬 ${thread.comments} comments",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+                
+                // Timestamp
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Posted ${formatTimeAgo(thread.timeStamp)}",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
             }
         }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { 
+                Text(
+                    "Delete Post", 
+                    fontSize = 18.sp, 
+                    fontWeight = FontWeight.Bold 
+                ) 
+            },
+            text = { 
+                Text(
+                    "Are you sure you want to delete this post? This action cannot be undone.",
+                    fontSize = 14.sp
+                ) 
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(
+                        "Delete",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(
+                        "Cancel",
+                        color = Color.Gray
+                    )
+                }
+            }
+        )
     }
 }
 

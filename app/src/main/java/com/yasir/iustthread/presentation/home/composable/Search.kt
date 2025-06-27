@@ -104,7 +104,7 @@ fun Search(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.logo),
+                            painter = painterResource(R.drawable.threads_logo),
                             contentDescription = "logo",
                             tint = Color.White
                         )
