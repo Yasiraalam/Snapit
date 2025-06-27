@@ -1,7 +1,7 @@
-# Snapit App
+# Snappit App
 
 ## Description
-**Snapit** is a native Android social media application built using Kotlin and Jetpack Compose. It enables users to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments — all within a sleek and intuitive interface.
+**Snappit** is a native Android social media application built using Kotlin and Jetpack Compose. It enables users to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments — all within a sleek and intuitive interface.
 
 ## Features
 - **User Authentication:** Secure sign up, login, and logout functionality using Firebase Authentication.
