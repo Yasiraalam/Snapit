@@ -4,58 +4,59 @@ package com.yasir.iustthread.presentation.home.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.yasir.iustthread.R
-import com.yasir.iustthread.domain.model.ThreadModel
-import com.yasir.iustthread.domain.model.UserModel
+import com.yasir.iustthread.domain.model.Post
 import com.yasir.iustthread.presentation.home.HomeViewModel
 import com.yasir.iustthread.utils.SharedPref
 import java.text.SimpleDateFormat
-import java.util.*
-
-data class Post(
-    val id: String,
-    val userAvatar: String,
-    val userName: String,
-    val userUsername: String,
-    val timeAgo: String,
-    val title: String,
-    val content: String,
-    val imageUrl: String? = null,
-    val likes: Int,
-    val comments: Int,
-    val shares: Int = 0,
-    val isLiked: Boolean = false,
-    val isBookmarked: Boolean = false,
-    val likedBy: String = ""
-)
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -87,101 +88,52 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(
-                                    Color(0xFFE91E63),
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .padding(6.dp),
-                            tint = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "SocialApp",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE91E63)
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { 
-                        navController.navigate("add_thread")
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Post",
-                            tint = Color(0xFF1F2937),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
-                .padding(paddingValues)
-        ) {
-            // Posts List
-            if (posts.isEmpty()) {
-                // Show loading or empty state
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8F9FA))
+    ) {
+        if (posts.isEmpty()) {
+            // Loading state
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFE91E63),
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Loading...",
-                            fontSize = 16.sp,
-                            color = Color(0xFF6B7280)
-                        )
-                    }
+                    CircularProgressIndicator(
+                        color = Color(0xFFE91E63),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Loading posts...",
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(posts) { post ->
-                        PostCard(
-                            post = post,
-                            onLikeClick = { isLiked ->
-                                homeViewModel.toggleThreadLike(
-                                    threadId = post.id,
-                                    userId = currentUserId,
-                                    isLiked = isLiked
-                                ) { newLikeCount ->
-                                    // The ViewModel will automatically update the data
-                                }
-                            },
-                            navController = navController
-                        )
-                    }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(posts) { post ->
+                    PostCard(
+                        post = post,
+                        onLikeClick = { isLiked ->
+                            homeViewModel.toggleThreadLike(
+                                threadId = post.id,
+                                userId = currentUserId,
+                                isLiked = isLiked
+                            ) { newLikeCount ->
+                                // The ViewModel will automatically refresh the data
+                                // This callback can be used for additional UI updates if needed
+                            }
+                        },
+                        navController = navController
+                    )
                 }
             }
         }
@@ -356,15 +308,15 @@ fun PostCard(
                     )
                 }
 
-                // Bookmark Button
-                Icon(
-                    painter = if (post.isBookmarked) painterResource(id = R.drawable.filled_bookmark) else painterResource(id = R.drawable.bookmark),
-                    contentDescription = "Bookmark",
-                    tint = if (post.isBookmarked) Color(0xFFE91E63) else Color(0xFF6B7280),
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { /* Handle bookmark */ }
-                )
+//                // Bookmark Button
+//                Icon(
+//                    painter = if (post.isBookmarked) painterResource(id = R.drawable.filled_bookmark) else painterResource(id = R.drawable.bookmark),
+//                    contentDescription = "Bookmark",
+//                    tint = if (post.isBookmarked) Color(0xFFE91E63) else Color(0xFF6B7280),
+//                    modifier = Modifier
+//                        .size(24.dp)
+//                        .clickable { /* Handle bookmark */ }
+//                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
