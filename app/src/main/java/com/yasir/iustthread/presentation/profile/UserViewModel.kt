@@ -281,4 +281,28 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteThread(thread: ThreadModel) {
+        if (thread.threadId.isEmpty()) {
+            Log.e("iust_debug", "Cannot delete thread: threadId is empty")
+            return
+        }
+        
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // Remove from database
+                threadRef.child(thread.threadId).removeValue().await()
+                Log.d("iust_debug", "Successfully deleted thread: ${thread.threadId}")
+                
+                // Update local list
+                withContext(Dispatchers.Main) {
+                    val currentThreads = _threads.value?.toMutableList() ?: mutableListOf()
+                    currentThreads.removeAll { it.threadId == thread.threadId }
+                    _threads.value = currentThreads
+                }
+            } catch (e: Exception) {
+                Log.e("iust_debug", "Failed to delete thread: ${e.message}")
+            }
+        }
+    }
 }
