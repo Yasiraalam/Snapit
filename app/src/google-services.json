@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "492549263906",
+    "firebase_url": "https://iust-thread-default-rtdb.firebaseio.com",
+    "project_id": "iust-thread",
+    "storage_bucket": "iust-thread.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492549263906:android:b4560a36ab6ad5b27b307b",
+        "android_client_info": {
+          "package_name": "com.yasir.iustthread"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7yI4gvFu2S-9dK9In9nry3OrzilnDjZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
