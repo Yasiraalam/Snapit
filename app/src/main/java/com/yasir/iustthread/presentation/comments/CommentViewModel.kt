@@ -1,17 +1,18 @@
 package com.yasir.iustthread.presentation.comments
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.yasir.iustthread.domain.model.CommentModel
 import com.yasir.iustthread.domain.model.UserModel
 import com.yasir.iustthread.utils.SharedPref
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class CommentViewModel : ViewModel() {
@@ -27,161 +28,124 @@ class CommentViewModel : ViewModel() {
     val isCommentAdded: LiveData<Boolean> = _isCommentAdded
     
     fun fetchComments(threadId: String) {
-        Log.d("CommentViewModel", "Fetching comments for thread: $threadId")
-        
-        commentsRef.orderByChild("threadId").equalTo(threadId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    Log.d("CommentViewModel", "Comments snapshot size: ${snapshot.childrenCount}")
-                    val result = mutableListOf<Pair<CommentModel, UserModel>>()
-                    
-                    if (snapshot.childrenCount == 0L) {
-                        Log.d("CommentViewModel", "No comments found for thread: $threadId")
-                        _commentsAndUsers.postValue(result)
-                        return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val snapshot = commentsRef.orderByChild("threadId").equalTo(threadId).get().await()
+                val result = mutableListOf<Pair<CommentModel, UserModel>>()
+                
+                if (snapshot.childrenCount == 0L) {
+                    withContext(Dispatchers.Main) {
+                        _commentsAndUsers.value = result
                     }
-                    
-                    var processedCount = 0
-                    val totalComments = snapshot.childrenCount.toInt()
-                    
-                    for (commentSnapshot in snapshot.children) {
-                        val comment = commentSnapshot.getValue(CommentModel::class.java)
-                        Log.d("CommentViewModel", "Comment: $comment")
-                        
-                        comment?.let {
-                            fetchUserForComment(it) { user ->
-                                result.add(it to user)
-                                processedCount++
-                                
-                                if (processedCount == totalComments) {
-                                    Log.d("CommentViewModel", "All comments fetched: ${result.size}")
-                                    _commentsAndUsers.postValue(result)
-                                }
-                            }
-                        } ?: run {
-                            processedCount++
-                            if (processedCount == totalComments) {
-                                _commentsAndUsers.postValue(result)
-                            }
-                        }
+                    return@launch
+                }
+                
+                for (commentSnapshot in snapshot.children) {
+                    val comment = commentSnapshot.getValue(CommentModel::class.java)
+                    comment?.let {
+                        val user = fetchUserForComment(it)
+                        result.add(it to user)
                     }
                 }
                 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("CommentViewModel", "Failed to fetch comments: ${error.message}")
-                    _commentsAndUsers.postValue(emptyList())
+                withContext(Dispatchers.Main) {
+                    _commentsAndUsers.value = result
                 }
-            })
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _commentsAndUsers.value = emptyList()
+                }
+            }
+        }
     }
     
-    private fun fetchUserForComment(
-        comment: CommentModel,
-        onResult: (UserModel) -> Unit
-    ) {
-        if (comment.userId.isEmpty()) {
-            Log.e("CommentViewModel", "Comment userId is empty")
-            onResult(UserModel())
-            return
+    private suspend fun fetchUserForComment(comment: CommentModel): UserModel {
+        return try {
+            if (comment.userId.isEmpty()) {
+                return UserModel()
+            }
+            
+            val userSnapshot = usersRef.child(comment.userId).get().await()
+            userSnapshot.getValue(UserModel::class.java) ?: UserModel()
+        } catch (e: Exception) {
+            UserModel()
         }
-        
-        usersRef.child(comment.userId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(UserModel::class.java)
-                    if (user != null) {
-                        Log.d("CommentViewModel", "Fetched user for comment: ${user.username}")
-                        onResult(user)
-                    } else {
-                        Log.e("CommentViewModel", "User not found for comment: ${comment.userId}")
-                        onResult(UserModel())
-                    }
-                }
-                
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("CommentViewModel", "Failed to fetch user for comment: ${error.message}")
-                    onResult(UserModel())
-                }
-            })
     }
     
     fun addComment(threadId: String, commentText: String, context: Context) {
-        val currentUserId = SharedPref.getUserId(context)
-        
-        if (currentUserId.isEmpty()) {
-            Log.e("CommentViewModel", "Current user ID is empty")
-            return
-        }
-        
-        val commentId = UUID.randomUUID().toString()
-        val timestamp = System.currentTimeMillis().toString()
-        
-        val comment = CommentModel(
-            commentId = commentId,
-            threadId = threadId,
-            userId = currentUserId,
-            comment = commentText,
-            timeStamp = timestamp,
-            likedBy = emptyList(),
-            likes = 0
-        )
-        
-        Log.d("CommentViewModel", "Adding comment: $comment")
-        
-        commentsRef.child(commentId).setValue(comment)
-            .addOnSuccessListener {
-                Log.d("CommentViewModel", "Comment added successfully")
-                _isCommentAdded.postValue(true)
-                // Update thread comment count
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val currentUserId = SharedPref.getUserId(context)
+                
+                if (currentUserId.isEmpty()) {
+                    return@launch
+                }
+                
+                val commentId = UUID.randomUUID().toString()
+                val timestamp = System.currentTimeMillis().toString()
+                
+                val comment = CommentModel(
+                    commentId = commentId,
+                    threadId = threadId,
+                    userId = currentUserId,
+                    comment = commentText,
+                    timeStamp = timestamp,
+                    likedBy = emptyList(),
+                    likes = 0
+                )
+                
+                commentsRef.child(commentId).setValue(comment).await()
                 updateThreadCommentCount(threadId)
+                
+                withContext(Dispatchers.Main) {
+                    _isCommentAdded.value = true
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _isCommentAdded.value = false
+                }
             }
-            .addOnFailureListener { exception ->
-                Log.e("CommentViewModel", "Failed to add comment: $exception")
-                _isCommentAdded.postValue(false)
-            }
+        }
     }
     
-    private fun updateThreadCommentCount(threadId: String) {
-        val threadRef = database.getReference("threads").child(threadId)
-        threadRef.get().addOnSuccessListener { snapshot ->
+    private suspend fun updateThreadCommentCount(threadId: String) {
+        try {
+            val threadRef = database.getReference("threads").child(threadId)
+            val snapshot = threadRef.get().await()
             val thread = snapshot.getValue(com.yasir.iustthread.domain.model.ThreadModel::class.java)
             thread?.let {
                 val newCommentCount = (it.comments.toIntOrNull() ?: 0) + 1
-                threadRef.child("comments").setValue(newCommentCount.toString())
-                    .addOnSuccessListener {
-                        Log.d("CommentViewModel", "Thread comment count updated to: $newCommentCount")
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e("CommentViewModel", "Failed to update thread comment count: $exception")
-                    }
+                threadRef.child("comments").setValue(newCommentCount.toString()).await()
             }
+        } catch (e: Exception) {
+            // Handle error silently
         }
     }
     
     fun toggleCommentLike(commentId: String, userId: String, isLiked: Boolean) {
-        val commentRef = commentsRef.child(commentId)
-        commentRef.get().addOnSuccessListener { snapshot ->
-            val comment = snapshot.getValue(CommentModel::class.java)
-            
-            comment?.let {
-                val newLikesCount = if (isLiked) it.likes - 1 else it.likes + 1
-                val newLikedBy = if (isLiked) {
-                    it.likedBy.toMutableList().apply { remove(userId) }
-                } else {
-                    it.likedBy.toMutableList().apply { add(userId) }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val commentRef = commentsRef.child(commentId)
+                val snapshot = commentRef.get().await()
+                val comment = snapshot.getValue(CommentModel::class.java)
+                
+                comment?.let {
+                    val newLikesCount = if (isLiked) it.likes - 1 else it.likes + 1
+                    val newLikedBy = if (isLiked) {
+                        it.likedBy.toMutableList().apply { remove(userId) }
+                    } else {
+                        it.likedBy.toMutableList().apply { add(userId) }
+                    }
+                    
+                    val updatedComment = it.copy(
+                        likes = newLikesCount,
+                        likedBy = newLikedBy
+                    )
+                    
+                    commentRef.setValue(updatedComment).await()
                 }
-                
-                val updatedComment = it.copy(
-                    likes = newLikesCount,
-                    likedBy = newLikedBy
-                )
-                
-                commentRef.setValue(updatedComment)
-                    .addOnSuccessListener {
-                        Log.d("CommentViewModel", "Comment like updated: $newLikesCount")
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e("CommentViewModel", "Failed to update comment like: $exception")
-                    }
+            } catch (e: Exception) {
+                // Handle error silently
             }
         }
     }
