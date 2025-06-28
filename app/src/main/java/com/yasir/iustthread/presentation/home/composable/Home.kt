@@ -2,8 +2,11 @@
 
 package com.yasir.iustthread.presentation.home.composable
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,14 +35,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,6 +61,7 @@ import com.yasir.iustthread.domain.model.Post
 import com.yasir.iustthread.presentation.home.HomeViewModel
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.utils.spotlightShimmerEffect
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -208,25 +216,13 @@ fun PostCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Post Image
+            // Post Image with Double Tap to Like
             if (post.imageUrl != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    AsyncImage(
-                        model = post.imageUrl,
-                        contentDescription = "Post Image",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop,
-                        error = painterResource(id = R.drawable.image)
-                    )
-                }
+                DoubleTapLikeImage(
+                    imageUrl = post.imageUrl,
+                    isLiked = post.isLiked,
+                    onLikeClick = onLikeClick
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -296,16 +292,6 @@ fun PostCard(
                             .clickable { /* Handle share */ }
                     )
                 }
-
-//                // Bookmark Button
-//                Icon(
-//                    painter = if (post.isBookmarked) painterResource(id = R.drawable.filled_bookmark) else painterResource(id = R.drawable.bookmark),
-//                    contentDescription = "Bookmark",
-//                    tint = if (post.isBookmarked) Color(0xFFE91E63) else Color(0xFF6B7280),
-//                    modifier = Modifier
-//                        .size(24.dp)
-//                        .clickable { /* Handle bookmark */ }
-//                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -327,6 +313,103 @@ fun PostCard(
                     fontSize = 12.sp,
                     color = Color(0xFF6B7280)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DoubleTapLikeImage(
+    imageUrl: String,
+    isLiked: Boolean,
+    onLikeClick: (Boolean) -> Unit
+) {
+    var showHeartAnimation by remember { mutableStateOf(false) }
+    var lastTapTime by remember { mutableStateOf(0L) }
+    
+    val heartScale by animateFloatAsState(
+        targetValue = if (showHeartAnimation) 1.5f else 0f,
+        animationSpec = tween(durationMillis = 800, easing = androidx.compose.animation.core.EaseOutBack),
+        label = "heart_scale"
+    )
+    
+    val heartAlpha by animateFloatAsState(
+        targetValue = if (showHeartAnimation) 1f else 0f,
+        animationSpec = tween(durationMillis = 800),
+        label = "heart_alpha"
+    )
+
+    // Auto-hide heart animation
+    LaunchedEffect(showHeartAnimation) {
+        if (showHeartAnimation) {
+            delay(800)
+            showHeartAnimation = false
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val currentTime = System.currentTimeMillis()
+                        val timeDiff = currentTime - lastTapTime
+                        
+                        if (timeDiff < 300) { // Double tap detected (within 300ms)
+                            // Trigger like if not already liked
+                            if (!isLiked) {
+                                onLikeClick(false) // false means we want to like it
+                            }
+                            
+                            // Show heart animation
+                            showHeartAnimation = true
+                        }
+                        
+                        lastTapTime = currentTime
+                    }
+                )
+            },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Post Image
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Post Image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop,
+                error = painterResource(id = R.drawable.image)
+            )
+            
+            // Animated Heart Overlay
+            if (showHeartAnimation) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "Heart",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .scale(heartScale)
+                            .background(
+                                Color(0xFFE91E63).copy(alpha = heartAlpha * 0.8f),
+                                CircleShape
+                            )
+                            .padding(20.dp)
+                    )
+                }
             }
         }
     }
