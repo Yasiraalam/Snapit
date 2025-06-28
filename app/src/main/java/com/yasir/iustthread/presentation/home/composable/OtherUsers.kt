@@ -74,7 +74,7 @@ fun OtherUsers(
 
     val userViewModel: UserViewModel = viewModel()
     val threads by userViewModel.threads.observeAsState(emptyList())
-    val users by userViewModel.users.observeAsState(null)
+    val user by userViewModel.user.observeAsState(null)
     val followersList by userViewModel.followersList.observeAsState(emptyList())
     val followingList by userViewModel.followingList.observeAsState(emptyList())
     val isLoading by userViewModel.isLoading.observeAsState(false)
@@ -100,10 +100,7 @@ fun OtherUsers(
         if (uid.isNotEmpty()) {
             try {
                 isInitialLoading = true
-                userViewModel.fetchThreads(uid)
-                userViewModel.fetchUser(uid)
-                userViewModel.getFollowers(uid)
-                userViewModel.getFollowing(uid)
+                userViewModel.refreshUserData(uid)
                 kotlinx.coroutines.delay(500)
                 isInitialLoading = false
             } catch (e: Exception) {
@@ -124,8 +121,7 @@ fun OtherUsers(
     LaunchedEffect(shouldRefreshFollowers) {
         if (shouldRefreshFollowers) {
             kotlinx.coroutines.delay(600)
-            userViewModel.getFollowers(uid)
-            userViewModel.getFollowing(uid)
+            userViewModel.refreshUserData(uid)
             isFollowLoading = false
             shouldRefreshFollowers = false
         }
@@ -149,7 +145,7 @@ fun OtherUsers(
         TopAppBar(
             title = {
                 Text(
-                    text = users?.username ?: "User",
+                    text = user?.username ?: "User",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.Black
@@ -187,7 +183,7 @@ fun OtherUsers(
                 ) {
                     // Profile Header Section
                     item {
-                        if (users != null) {
+                        if (user != null) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -208,9 +204,9 @@ fun OtherUsers(
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        if (users!!.imageUri.isNotEmpty()) {
+                                        if (user!!.imageUri.isNotEmpty()) {
                                             AsyncImage(
-                                                model = users!!.imageUri,
+                                                model = user!!.imageUri,
                                                 contentDescription = "Profile image",
                                                 modifier = Modifier
                                                     .size(80.dp)
@@ -219,7 +215,7 @@ fun OtherUsers(
                                             )
                                         } else {
                                             Text(
-                                                text = users!!.name.take(2).uppercase().ifEmpty { "U" },
+                                                text = user!!.name.take(2).uppercase().ifEmpty { "U" },
                                                 color = Color.White,
                                                 fontSize = 24.sp,
                                                 fontWeight = FontWeight.Bold
@@ -250,16 +246,16 @@ fun OtherUsers(
 
                                 // User Info
                                 Text(
-                                    text = users!!.name.ifEmpty { "User" },
+                                    text = user!!.name.ifEmpty { "User" },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black
                                 )
 
-                                if (users!!.bio.isNotEmpty()) {
+                                if (user!!.bio.isNotEmpty()) {
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = users!!.bio,
+                                        text = user!!.bio,
                                         fontSize = 14.sp,
                                         color = Color.Gray,
                                         lineHeight = 18.sp
@@ -282,9 +278,9 @@ fun OtherUsers(
                                             if (!isFollowLoading) {
                                                 isFollowLoading = true
                                                 if (isFollowing) {
-                                                    userViewModel.unfollowUsers(uid, currentUserId)
+                                                    userViewModel.unfollowUser(uid, currentUserId)
                                                 } else {
-                                                    userViewModel.followUsers(uid, currentUserId)
+                                                    userViewModel.followUser(uid, currentUserId)
                                                 }
                                                 shouldRefreshFollowers = true
                                             }
