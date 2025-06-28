@@ -301,7 +301,7 @@ fun AppLogo() {
             .background(PinkColor, shape = RoundedCornerShape(20.dp))
     ) {
         Icon(
-            painter = painterResource(R.drawable.logo),
+            painter = painterResource(R.drawable.threads_logo),
             contentDescription = "App Logo",
             tint = Color.White,
             modifier = Modifier.size(36.dp)
