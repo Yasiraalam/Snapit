@@ -60,6 +60,7 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
 import com.yasir.iustthread.presentation.profile.composable.Profile
 import com.yasir.iustthread.ui.theme.PinkColor
+import com.yasir.iustthread.utils.rememberBottomPadding
 
 @Composable
 fun BottomNav(navController: NavHostController) {
@@ -97,6 +98,7 @@ fun BottomNav(navController: NavHostController) {
 fun ModernBottomBar(navController: NavHostController) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry.value?.destination?.route
+    val bottomPadding = rememberBottomPadding()
 
     val navItems = listOf(
         BottomNavItem("Home", Routes.Home.routes, Icons.Filled.Home),
@@ -109,7 +111,8 @@ fun ModernBottomBar(navController: NavHostController) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp),
+            .height(72.dp)
+            .padding(bottom = bottomPadding.dp),
         color = Color.White,
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)

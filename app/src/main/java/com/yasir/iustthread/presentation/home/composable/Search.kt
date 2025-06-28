@@ -201,7 +201,7 @@ fun Search(
         // Content based on search state
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(16.dp, bottom = 96.dp)
         ) {
             if (search.isEmpty()) {
                 // Show recent searches and trending when not searching

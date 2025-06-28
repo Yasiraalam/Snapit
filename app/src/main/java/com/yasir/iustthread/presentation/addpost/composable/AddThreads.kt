@@ -187,7 +187,7 @@ fun AddThreads(navHostController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp, bottom = 96.dp)
         ) {
             // User Profile Section
             Card(

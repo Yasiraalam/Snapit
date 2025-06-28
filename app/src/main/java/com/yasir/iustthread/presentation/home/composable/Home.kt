@@ -97,7 +97,7 @@ fun HomeScreen(
             // Skeleton loading state
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
             ) {
                 items(5) { // Show 5 skeleton posts
                     SkeletonPostCard()
@@ -106,7 +106,7 @@ fun HomeScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
             ) {
                 items(posts) { post ->
                     PostCard(
