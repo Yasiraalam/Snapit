@@ -32,7 +32,6 @@ import com.yasir.iustthread.internetConnectiviy.ConnectivityObserver
 import com.yasir.iustthread.internetConnectiviy.NetworkConnectivityObserver
 import com.yasir.iustthread.navigation.Routes.Home
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
-import com.yasir.iustthread.presentation.comments.composable.CommentsScreen
 import com.yasir.iustthread.presentation.home.composable.BottomNav
 import com.yasir.iustthread.presentation.home.composable.HomeScreen
 import com.yasir.iustthread.presentation.login.composable.Login
@@ -103,7 +102,7 @@ fun NavGraph(
                 
                 composable(Routes.Comments.routes){
                     val threadId = it.arguments!!.getString("threadId")
-                    CommentsScreen(navController, threadId!!)
+                    //CommentsScreen(navController, threadId!!)
                 }
                 
                 composable("user_posts_feed/{startIndex}") { backStackEntry ->

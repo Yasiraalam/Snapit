@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -33,7 +35,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,7 +63,9 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.yasir.iustthread.R
 import com.yasir.iustthread.domain.model.Post
+import com.yasir.iustthread.presentation.comments.composable.CommentsBottomSheet
 import com.yasir.iustthread.presentation.home.HomeViewModel
+import com.yasir.iustthread.presentation.home.LoadingState
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.utils.spotlightShimmerEffect
 import kotlinx.coroutines.delay
@@ -75,6 +82,11 @@ fun HomeScreen(
     val currentUserId by remember { mutableStateOf(SharedPref.getUserId(context)) }
     
     val threadsAndUsers by homeViewModel.threadsAndUsers.observeAsState(initial = emptyList())
+    val loadingState by homeViewModel.loadingState.observeAsState(initial = LoadingState.LOADING)
+    
+    // State for comments bottom sheet
+    var showCommentsSheet by remember { mutableStateOf(false) }
+    var selectedThreadId by remember { mutableStateOf("") }
     
     // Convert ThreadModel and UserModel pairs to Post objects
     val posts = remember(threadsAndUsers, currentUserId) {
@@ -101,38 +113,165 @@ fun HomeScreen(
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        if (posts.isEmpty()) {
-            // Skeleton loading state
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
-            ) {
-                items(5) { // Show 5 skeleton posts
-                    SkeletonPostCard()
+        when (loadingState) {
+            LoadingState.LOADING -> {
+                // Skeleton loading state
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+                ) {
+                    items(5) { // Show 5 skeleton posts
+                        SkeletonPostCard()
+                    }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
-            ) {
-                items(posts) { post ->
-                    PostCard(
-                        post = post,
-                        onLikeClick = { isLiked ->
-                            homeViewModel.toggleThreadLike(
-                                threadId = post.id,
-                                userId = currentUserId,
-                                isLiked = isLiked
-                            ) { newLikeCount ->
-                                // The ViewModel will automatically refresh the data
-                                // This callback can be used for additional UI updates if needed
+            LoadingState.EMPTY -> {
+                // No posts state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        // Empty state icon
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(
+                                    Color(0xFFE5E7EB),
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color(0xFF9CA3AF),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Text(
+                            text = "No Posts Yet",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Text(
+                            text = "Be the first to share something amazing!",
+                            fontSize = 16.sp,
+                            color = Color(0xFF6B7280),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
+                        
+                        // Create post button
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                navController.navigate("add_thread")
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE91E63)
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Create Your First Post",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+            LoadingState.SUCCESS -> {
+                // Posts list
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+                ) {
+                    items(posts) { post ->
+                        PostCard(
+                            post = post,
+                            onLikeClick = { isLiked ->
+                                homeViewModel.toggleThreadLike(
+                                    threadId = post.id,
+                                    userId = currentUserId,
+                                    isLiked = isLiked
+                                ) { newLikeCount ->
+                                    // The ViewModel will automatically refresh the data
+                                    // This callback can be used for additional UI updates if needed
+                                }
+                            },
+                            onCommentClick = {
+                                selectedThreadId = post.id
+                                showCommentsSheet = true
                             }
-                        },
-                        navController = navController
-                    )
+                        )
+                    }
                 }
             }
+            LoadingState.ERROR -> {
+                // Error state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            tint = Color(0xFFDC2626),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Something went wrong",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF1F2937)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Please check your connection and try again",
+                            fontSize = 14.sp,
+                            color = Color(0xFF6B7280),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Comments Bottom Sheet
+        if (showCommentsSheet) {
+            CommentsBottomSheet(
+                threadId = selectedThreadId,
+                onDismiss = {
+                    showCommentsSheet = false
+                    selectedThreadId = ""
+                }
+            )
         }
     }
 }
@@ -141,12 +280,12 @@ fun HomeScreen(
 fun PostCard(
     post: Post,
     onLikeClick: (Boolean) -> Unit,
-    navController: NavHostController
+    onCommentClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -261,9 +400,7 @@ fun PostCard(
                     // Comment Button
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { 
-                            navController.navigate("comments/${post.id}")
-                        }
+                        modifier = Modifier.clickable { onCommentClick() }
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.chat),

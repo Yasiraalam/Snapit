@@ -16,6 +16,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
+enum class LoadingState {
+    LOADING,
+    EMPTY,
+    SUCCESS,
+    ERROR
+}
+
 class HomeViewModel : ViewModel() {
 
     private val database = FirebaseDatabase.getInstance()
@@ -25,6 +32,9 @@ class HomeViewModel : ViewModel() {
     private val _threadsAndUsers = MutableLiveData<List<Pair<ThreadModel, UserModel>>>()
     val threadsAndUsers: LiveData<List<Pair<ThreadModel, UserModel>>> = _threadsAndUsers
 
+    private val _loadingState = MutableLiveData<LoadingState>(LoadingState.LOADING)
+    val loadingState: LiveData<LoadingState> = _loadingState
+
     // Cache for optimistic updates
     private val threadCache = mutableMapOf<String, ThreadModel>()
     private val userCache = mutableMapOf<String, UserModel>()
@@ -32,6 +42,7 @@ class HomeViewModel : ViewModel() {
     // Firebase listeners
     private var threadsListener: ValueEventListener? = null
     private var usersListener: ValueEventListener? = null
+    private var hasInitialDataLoaded = false
 
     init {
         setupRealTimeListeners()
@@ -48,6 +59,7 @@ class HomeViewModel : ViewModel() {
                         if (snapshot.childrenCount == 0L) {
                             withContext(Dispatchers.Main) {
                                 _threadsAndUsers.value = result
+                                _loadingState.value = LoadingState.EMPTY
                             }
                             return@launch
                         }
@@ -69,15 +81,23 @@ class HomeViewModel : ViewModel() {
                         
                         withContext(Dispatchers.Main) {
                             _threadsAndUsers.value = result
+                            if (!hasInitialDataLoaded) {
+                                hasInitialDataLoaded = true
+                            }
+                            _loadingState.value = if (result.isEmpty()) LoadingState.EMPTY else LoadingState.SUCCESS
                         }
                     } catch (e: Exception) {
                         Log.e("iust_debug", "Error in threads listener: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            _loadingState.value = LoadingState.ERROR
+                        }
                     }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e("iust_debug", "Threads listener cancelled: ${error.message}")
+                _loadingState.value = LoadingState.ERROR
             }
         })
 
