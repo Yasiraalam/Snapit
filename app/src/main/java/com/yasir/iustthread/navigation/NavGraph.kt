@@ -55,6 +55,7 @@ fun NavGraph(
     val status by connectivityObserver.observe().collectAsState(
         initial = ConnectivityObserver.Status.Available
     )
+    
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -66,43 +67,29 @@ fun NavGraph(
             ){
                 composable(Routes.Splash.routes){
                     Splash(navController)
-
-                }
-
-                composable(Routes.Home.routes){
-                    HomeScreen(navController)
-
-                }
-
-                composable(Routes.Notification.routes){
-                    Notification()
-                }
-
-                composable(Routes.Search.routes){
-                    Search(navController)
                 }
 
                 composable(Routes.BottomNav.routes){
                     BottomNav(navController)
                 }
+                
                 composable(Routes.Login.routes){
                     Login(navController)
                 }
+                
                 composable(Routes.Register.routes){
                     Register(navController)
                 }
-                composable(Routes.Profile.routes){
-                    Profile(navController)
-                }
+                
                 composable(Routes.EditProfile.routes){
                     EditProfile(navController)
                 }
+                
                 composable(Routes.OtherUsers.routes){
                     val data = it.arguments!!.getString("data")
                     OtherUsers(navController,data!!)
                 }
 
-                
                 composable("user_posts_feed/{startIndex}") { backStackEntry ->
                     val startIndex = backStackEntry.arguments?.getString("startIndex")?.toIntOrNull() ?: 0
                     val userViewModel: UserViewModel = viewModel()
@@ -147,6 +134,4 @@ fun NavGraph(
             }
         }
     }
-
-
 }

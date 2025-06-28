@@ -16,18 +16,7 @@ object NavigationUtils {
     @SuppressLint("InternalInsetResource")
     fun isGestureNavigation(context: Context): Boolean {
         return try {
-            // Method 1: Check navigation bar height
-            val resources = context.resources
-            val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-            if (resourceId > 0) {
-                val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
-                // Gesture navigation typically has a smaller or zero navigation bar height
-                if (navigationBarHeight < 48) {
-                    return true
-                }
-            }
-            
-            // Method 2: Check for Android 10+ gesture navigation setting
+            // Method 1: Check for Android 10+ gesture navigation setting
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val gestureNavigationEnabled = Settings.Secure.getInt(
                     context.contentResolver,
@@ -40,26 +29,34 @@ object NavigationUtils {
                 }
             }
             
-            // Method 3: Check for Android 11+ gesture navigation setting
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val gestureNavigationEnabled = Settings.Secure.getInt(
-                    context.contentResolver,
-                    "navigation_mode",
-                    0
-                )
-                // 2 = gesture navigation, 0 = three-button navigation
-                if (gestureNavigationEnabled == 2) {
+            // Method 2: Check navigation bar height
+            val resources = context.resources
+            val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
+                // Gesture navigation typically has a smaller or zero navigation bar height
+                if (navigationBarHeight < 48) {
                     return true
                 }
             }
             
-            // Method 4: Check for Samsung One UI gesture navigation
+            // Method 3: Check for Samsung One UI gesture navigation
             val samsungGestureEnabled = Settings.Secure.getInt(
                 context.contentResolver,
                 "navigationbar_hide_bar_enabled",
                 0
             )
             if (samsungGestureEnabled == 1) {
+                return true
+            }
+            
+            // Method 4: Check for MIUI gesture navigation
+            val miuiGestureEnabled = Settings.Secure.getInt(
+                context.contentResolver,
+                "force_fsg_nav_bar",
+                0
+            )
+            if (miuiGestureEnabled == 1) {
                 return true
             }
             
@@ -78,7 +75,37 @@ object NavigationUtils {
         return if (isGestureNavigation(context)) {
             0 // No extra padding for gesture navigation
         } else {
-            35 // Add padding for three-button navigation
+            45 // Increased padding for three-button navigation for better visibility and touch targets
+        }
+    }
+    
+    /**
+     * Returns the navigation bar height if available
+     */
+    @SuppressLint("InternalInsetResource")
+    fun getNavigationBarHeight(context: Context): Int {
+        return try {
+            val resources = context.resources
+            val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            0
+        }
+    }
+    
+    /**
+     * Returns appropriate content bottom padding to prevent UI elements from being cut off
+     * by the bottom navigation bar
+     */
+    fun getContentBottomPadding(context: Context): Int {
+        return if (isGestureNavigation(context)) {
+            100 // Standard padding for gesture navigation
+        } else {
+            140 // Extra padding for three-button navigation
         }
     }
 }
@@ -91,5 +118,16 @@ fun rememberBottomPadding(): Int {
     val context = LocalContext.current
     return remember(context) {
         NavigationUtils.getBottomPadding(context)
+    }
+}
+
+/**
+ * Composable function to get content bottom padding to prevent UI elements from being cut off
+ */
+@Composable
+fun rememberContentBottomPadding(): Int {
+    val context = LocalContext.current
+    return remember(context) {
+        NavigationUtils.getContentBottomPadding(context)
     }
 } 

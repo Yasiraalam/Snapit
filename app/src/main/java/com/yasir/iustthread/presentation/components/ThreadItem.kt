@@ -60,6 +60,7 @@ import com.yasir.iustthread.domain.model.ThreadModel
 import com.google.firebase.auth.FirebaseAuth
 import com.yasir.iustthread.domain.model.UserModel
 import com.yasir.iustthread.presentation.home.HomeViewModel
+import com.yasir.iustthread.ui.theme.PinkColor
 
 @Composable
 fun ThreadItem(
@@ -220,7 +221,7 @@ fun ThreadContent(
                     Icon(
                         imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like",
-                        tint = if (isLiked) Color(0xFFE91E63) else Color.Black,
+                        tint = if (isLiked) PinkColor else Color.Black,
                         modifier = Modifier.size(22.dp)
                     )
                 }
