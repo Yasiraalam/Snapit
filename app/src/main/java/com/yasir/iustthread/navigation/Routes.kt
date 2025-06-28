@@ -10,6 +10,7 @@ sealed class Routes(val routes:String) {
     object BottomNav :Routes("bottom_nav")
     object Login :Routes("login")
     object Register :Routes("register")
+    object EditProfile :Routes("edit_profile")
     object OtherUsers :Routes("other_users/{data}")
     object Comments :Routes("comments/{threadId}")
 }

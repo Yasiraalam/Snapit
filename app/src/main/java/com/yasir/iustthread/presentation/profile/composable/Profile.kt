@@ -3,6 +3,7 @@ package com.yasir.iustthread.presentation.profile.composable
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -306,7 +307,7 @@ fun Profile(navHostController: NavHostController) {
                                         )
                                     } else {
                                         Text(
-                                            text = user.name.take(2).uppercase().ifEmpty { "SJ" },
+                                            text = user.name.take(2).uppercase().ifEmpty { "YA" },
                                             color = Color.White,
                                             fontSize = 24.sp,
                                             fontWeight = FontWeight.Bold
@@ -331,6 +332,34 @@ fun Profile(navHostController: NavHostController) {
                                         label = "following"
                                     )
                                 }
+
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Edit Profile Button
+                            Button(
+                                onClick = {
+                                    navHostController.navigate(Routes.EditProfile.routes)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(
+                                        width = 2.dp,
+                                        color = PinkColor,
+                                        shape = RoundedCornerShape(25.dp)
+                                    ),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent
+                                ),
+                                shape = RoundedCornerShape(25.dp)
+                            ) {
+                                Text(
+                                    text = "Edit Profile",
+                                    color = PinkColor,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -375,7 +404,7 @@ fun Profile(navHostController: NavHostController) {
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             // Posts Section Header
                             Row(

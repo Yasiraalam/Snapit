@@ -45,6 +45,7 @@ import com.yasir.iustthread.presentation.profile.composable.UserPostsFeed
 import com.yasir.iustthread.presentation.home.composable.Search
 import com.yasir.iustthread.presentation.home.composable.Splash
 import com.yasir.iustthread.presentation.profile.UserViewModel
+import com.yasir.iustthread.presentation.profile.composable.EditProfile
 
 @Composable
 fun NavGraph(
@@ -89,6 +90,12 @@ fun NavGraph(
                 }
                 composable(Routes.Register.routes){
                     Register(navController)
+                }
+                composable(Routes.Profile.routes){
+                    Profile(navController)
+                }
+                composable(Routes.EditProfile.routes){
+                    EditProfile(navController)
                 }
                 composable(Routes.OtherUsers.routes){
                     val data = it.arguments!!.getString("data")

@@ -13,12 +13,17 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.yasir.iustthread.domain.model.ThreadModel
 import com.yasir.iustthread.domain.model.UserModel
+import com.yasir.iustthread.utils.SharedPref
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import android.content.Context
+import android.net.Uri
+import java.util.UUID
 
 class UserViewModel : ViewModel() {
 
@@ -302,6 +307,83 @@ class UserViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 Log.e("iust_debug", "Failed to delete thread: ${e.message}")
+            }
+        }
+    }
+
+    fun updateProfile(name: String, bio: String, imageUri: Uri?, context: Context) {
+        val currentUserId = SharedPref.getUserId(context)
+        if (currentUserId.isEmpty()) {
+            Log.e("iust_debug", "Cannot update profile: currentUserId is empty")
+            return
+        }
+        
+        _isLoading.value = true
+        
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                var finalImageUri = SharedPref.getImageUrl(context) // Keep current image if no new one
+                
+                // Upload new image if provided
+                if (imageUri != null) {
+                    try {
+                        val storageRef = FirebaseStorage.getInstance().reference
+                        val imageRef = storageRef.child("Users/${UUID.randomUUID()}.jpg")
+                        val uploadTask = imageRef.putFile(imageUri).await()
+                        finalImageUri = imageRef.downloadUrl.await().toString()
+                        Log.d("iust_debug", "Successfully uploaded new profile image")
+                    } catch (e: Exception) {
+                        Log.e("iust_debug", "Failed to upload image: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            _isLoading.value = false
+                        }
+                        return@launch
+                    }
+                }
+                
+                // Update user data in database
+                val userRef = database.getReference("Users").child(currentUserId)
+                val currentEmail = SharedPref.getEmail(context)
+                val currentPassword = "" // We don't store password in SharedPref for security
+                val currentUsername = SharedPref.getUserName(context)
+                
+                val updatedUser = UserModel(
+                    email = currentEmail,
+                    password = currentPassword,
+                    name = name,
+                    bio = bio,
+                    username = currentUsername,
+                    imageUri = finalImageUri,
+                    uid = currentUserId
+                )
+                
+                userRef.setValue(updatedUser).await()
+                Log.d("iust_debug", "Successfully updated user data in database")
+                
+                // Update SharedPref with new data
+                SharedPref.storeData(
+                    name,
+                    currentEmail,
+                    bio,
+                    currentUsername,
+                    finalImageUri,
+                    currentUserId,
+                    context
+                )
+                
+                // Update local user data
+                withContext(Dispatchers.Main) {
+                    _users.value = updatedUser
+                    _isLoading.value = false
+                }
+                
+                Log.d("iust_debug", "Profile updated successfully")
+                
+            } catch (e: Exception) {
+                Log.e("iust_debug", "Failed to update profile: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    _isLoading.value = false
+                }
             }
         }
     }
