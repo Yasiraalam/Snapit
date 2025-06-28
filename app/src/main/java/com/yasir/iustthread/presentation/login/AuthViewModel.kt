@@ -102,7 +102,7 @@ class AuthViewModel : ViewModel() {
         name: String,
         bio: String,
         username: String,
-        imageUri: Uri,
+        imageUri: Uri?,
         context: Context
     ) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -116,7 +116,11 @@ class AuthViewModel : ViewModel() {
                     _loading.value = false
                     _firebaseUser.value = result.user
                 }
-                saveImage(email, password, name, bio, username, imageUri, result.user?.uid, context)
+                if (imageUri != null) {
+                    saveImage(email, password, name, bio, username, imageUri, result.user?.uid, context)
+                } else {
+                    saveData(email, password, name, bio, username, "", result.user?.uid, context)
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _loading.value = false
