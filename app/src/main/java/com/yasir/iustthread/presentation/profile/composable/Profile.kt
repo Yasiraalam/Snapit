@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +20,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -82,6 +87,8 @@ import com.yasir.iustthread.presentation.login.AuthViewModel
 import com.yasir.iustthread.presentation.profile.UserViewModel
 import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.utils.SharedPref
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.platform.LocalLayoutDirection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,6 +155,7 @@ fun Profile(navHostController: NavHostController) {
     }
 
     Scaffold(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         topBar = {
             TopAppBar(
                 title = {
@@ -160,12 +168,7 @@ fun Profile(navHostController: NavHostController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { 
-                        navHostController.navigate(Routes.Home.routes) {
-                            popUpTo(Routes.Profile.routes) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
-                        }
+                        navHostController.navigateUp()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,

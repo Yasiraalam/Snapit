@@ -79,13 +79,6 @@ fun NavGraph(
                     Search(navController)
                 }
 
-                composable(Routes.AddThread.routes){
-                    AddThreads(navController)
-                }
-
-                composable(Routes.Profile.routes){
-                    Profile(navController)
-                }
                 composable(Routes.BottomNav.routes){
                     BottomNav(navController)
                 }
@@ -99,11 +92,7 @@ fun NavGraph(
                     val data = it.arguments!!.getString("data")
                     OtherUsers(navController,data!!)
                 }
-                
-                composable(Routes.Comments.routes){
-                    val threadId = it.arguments!!.getString("threadId")
-                    //CommentsScreen(navController, threadId!!)
-                }
+
                 
                 composable("user_posts_feed/{startIndex}") { backStackEntry ->
                     val startIndex = backStackEntry.arguments?.getString("startIndex")?.toIntOrNull() ?: 0
