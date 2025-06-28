@@ -68,6 +68,8 @@ import com.yasir.iustthread.presentation.home.HomeViewModel
 import com.yasir.iustthread.presentation.home.LoadingState
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.utils.spotlightShimmerEffect
+import com.yasir.iustthread.utils.NavigationUtils
+import com.yasir.iustthread.utils.rememberBottomPadding
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -80,6 +82,7 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val currentUserId by remember { mutableStateOf(SharedPref.getUserId(context)) }
+    val bottomPadding = rememberBottomPadding()
     
     val threadsAndUsers by homeViewModel.threadsAndUsers.observeAsState(initial = emptyList())
     val loadingState by homeViewModel.loadingState.observeAsState(initial = LoadingState.LOADING)
@@ -108,6 +111,13 @@ fun HomeScreen(
         }
     }
 
+    // Calculate dynamic bottom padding based on navigation type
+    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
+        80.dp // Standard padding for gesture navigation
+    } else {
+        (80 + bottomPadding).dp // Extra padding for three-button navigation
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -118,7 +128,7 @@ fun HomeScreen(
                 // Skeleton loading state
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+                    contentPadding = PaddingValues(top = 8.dp, bottom = dynamicBottomPadding)
                 ) {
                     items(5) { // Show 5 skeleton posts
                         SkeletonPostCard()
@@ -205,7 +215,7 @@ fun HomeScreen(
                 // Posts list
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+                    contentPadding = PaddingValues(top = 8.dp, bottom = dynamicBottomPadding)
                 ) {
                     items(posts) { post ->
                         PostCard(

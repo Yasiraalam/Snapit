@@ -87,23 +87,26 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.presentation.login.AuthViewModel
 import com.yasir.iustthread.presentation.profile.UserViewModel
 import com.yasir.iustthread.ui.theme.PinkColor
+import com.yasir.iustthread.utils.NavigationUtils
+import com.yasir.iustthread.utils.rememberBottomPadding
 import com.yasir.iustthread.utils.SharedPref
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalLayoutDirection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Profile(navHostController: NavHostController) {
+fun Profile(
+    navHostController: NavHostController,
+    userViewModel: UserViewModel = viewModel()
+) {
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
     val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
 
-    val userViewModel: UserViewModel = viewModel()
     val threads by userViewModel.threads.observeAsState(emptyList())
     val followersList by userViewModel.followersList.observeAsState(emptyList())
     val followingList by userViewModel.followingList.observeAsState(emptyList())
     val isLoading by userViewModel.isLoading.observeAsState(false)
-
 
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     var isInitialLoading by remember { mutableStateOf(true) }
@@ -153,6 +156,15 @@ fun Profile(navHostController: NavHostController) {
                 launchSingleTop = true
             }
         }
+    }
+
+    val bottomPadding = rememberBottomPadding()
+    
+    // Calculate dynamic bottom padding based on navigation type
+    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
+        80.dp // Standard padding for gesture navigation
+    } else {
+        (80 + bottomPadding).dp // Extra padding for three-button navigation
     }
 
     Scaffold(
@@ -272,7 +284,7 @@ fun Profile(navHostController: NavHostController) {
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp)
+                    contentPadding = PaddingValues(bottom = dynamicBottomPadding)
                 ) {
                     // Profile Header Section
                     item {

@@ -39,6 +39,7 @@ import com.yasir.iustthread.ui.theme.LightBorderGray
 import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.ui.theme.TextGray
 import com.yasir.iustthread.R
+import com.yasir.iustthread.ui.theme.Black
 
 
 @SuppressLint("ViewModelConstructorInComposable")
@@ -101,7 +102,7 @@ fun Login(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Sign in to your IUST-Thread account",
+                text = "Sign in to your Snapit account",
                 style = MaterialTheme.typography.bodyLarge,
                 color = TextGray
             )
@@ -122,18 +123,17 @@ fun Login(navController: NavHostController) {
                         value = email,
                         onValueChange = {
                             email = it
-                            // Your validation logic
+                            // Validation logic
                             emailError = !it.matches(emailRegex)
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Enter your email", color = TextGray) },
+                        placeholder = { Text("Enter your email", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = "Email Icon") },
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        isError = emailError // Your error state
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), // Keyboard type for email
+                        isError = emailError // Error state
                     )
-                    // Your error message display
                     if (emailError && email.isNotEmpty()) {
                         Text(
                             text = "Invalid email format (e.g., user@gmail.com)",
@@ -151,7 +151,7 @@ fun Login(navController: NavHostController) {
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Enter your password", color = TextGray) },
+                        placeholder = { Text("Enter your password", color = MaterialTheme.colorScheme.onSurfaceVariant) }, // Changed color for better visibility
                         leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = "Password Icon") },
                         trailingIcon = {
                             val image = if (passwordVisible) painterResource(R.drawable.visible_icon)else painterResource(R.drawable.visibility_off_icon)

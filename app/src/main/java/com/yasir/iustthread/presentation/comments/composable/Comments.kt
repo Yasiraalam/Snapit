@@ -33,10 +33,13 @@ import com.yasir.iustthread.R
 import com.yasir.iustthread.domain.model.CommentModel
 import com.yasir.iustthread.domain.model.UserModel
 import com.yasir.iustthread.presentation.comments.CommentViewModel
+import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.utils.SharedPref
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import com.yasir.iustthread.utils.NavigationUtils
+import com.yasir.iustthread.utils.rememberBottomPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +50,7 @@ fun CommentsBottomSheet(
 ) {
     val context = LocalContext.current
     val currentUserId by remember { mutableStateOf(SharedPref.getUserId(context)) }
+    val bottomPadding = rememberBottomPadding()
     
     val commentsAndUsers by commentViewModel.commentsAndUsers.observeAsState(initial = emptyList())
     val isCommentAdded by commentViewModel.isCommentAdded.observeAsState(initial = false)
@@ -58,6 +62,13 @@ fun CommentsBottomSheet(
     var replyingToUser by remember { mutableStateOf<UserModel?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var commentToDelete by remember { mutableStateOf<CommentModel?>(null) }
+    
+    // Calculate dynamic bottom padding based on navigation type
+    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
+        100.dp // Standard padding for gesture navigation
+    } else {
+        (100 + bottomPadding).dp // Extra padding for three-button navigation
+    }
     
     // Fetch comments when sheet opens
     LaunchedEffect(threadId) {
@@ -176,7 +187,7 @@ fun CommentsBottomSheet(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 CircularProgressIndicator(
-                                    color = Color(0xFFE91E63),
+                                    color = PinkColor,
                                     modifier = Modifier.size(48.dp)
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -220,7 +231,7 @@ fun CommentsBottomSheet(
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
+                            contentPadding = PaddingValues(top = 8.dp, bottom = dynamicBottomPadding)
                         ) {
                             items(commentsAndUsers.filter { it.first.parentCommentId == null }) { (comment, user) ->
                                 CommentItemWithReplies(
@@ -416,7 +427,7 @@ fun CommentItem(
                 Box(
                     modifier = Modifier
                         .size(if (isReply) 24.dp else 32.dp)
-                        .background(Color(0xFFE91E63), CircleShape),
+                        .background(PinkColor, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -523,7 +534,7 @@ fun CommentItem(
                                 Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Like",
                             tint = if (comment.likedBy.contains(currentUserId)) 
-                                Color(0xFFE91E63) else Color(0xFF6B7280),
+                                PinkColor else Color(0xFF6B7280),
                             modifier = Modifier.size(if (isReply) 14.dp else 16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -630,7 +641,7 @@ fun CommentInputBar(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(Color(0xFFE91E63), CircleShape),
+                        .background(PinkColor, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -657,7 +668,7 @@ fun CommentInputBar(
                 },
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE91E63),
+                    focusedBorderColor = PinkColor,
                     unfocusedBorderColor = Color(0xFFE5E7EB)
                 ),
                 keyboardOptions = KeyboardOptions(
@@ -678,14 +689,14 @@ fun CommentInputBar(
                 if (isAddingComment) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color(0xFFE91E63),
+                        color = PinkColor,
                         strokeWidth = 2.dp
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send",
-                        tint = if (commentText.isNotBlank()) Color(0xFFE91E63) else Color(0xFF9CA3AF),
+                        tint = if (commentText.isNotBlank()) PinkColor else Color(0xFF9CA3AF),
                         modifier = Modifier.size(24.dp)
                     )
                 }

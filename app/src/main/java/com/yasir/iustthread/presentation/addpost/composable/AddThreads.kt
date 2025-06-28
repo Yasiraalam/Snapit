@@ -47,7 +47,13 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.presentation.addpost.AddThreadViewModel
 import com.yasir.iustthread.R
+import com.yasir.iustthread.ui.theme.Black
+import com.yasir.iustthread.ui.theme.LightGrey
 import com.yasir.iustthread.ui.theme.PinkColor
+import com.yasir.iustthread.ui.theme.gray
+import com.yasir.iustthread.ui.theme.white
+import com.yasir.iustthread.utils.NavigationUtils
+import com.yasir.iustthread.utils.rememberBottomPadding
 
 @Composable
 fun AddThreads(navHostController: NavHostController) {
@@ -58,6 +64,7 @@ fun AddThreads(navHostController: NavHostController) {
     var thread by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val loading = remember { mutableStateOf(false) }
+    val bottomPadding = rememberBottomPadding()
     
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
@@ -85,6 +92,13 @@ fun AddThreads(navHostController: NavHostController) {
             Toast.makeText(context, "Thread Posted!", Toast.LENGTH_SHORT).show()
             navHostController.navigateUp()
         }
+    }
+
+    // Calculate dynamic bottom padding based on navigation type
+    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
+        96.dp // Standard padding for gesture navigation
+    } else {
+        (96 + bottomPadding).dp // Extra padding for three-button navigation
     }
 
     Scaffold(
@@ -182,10 +196,10 @@ fun AddThreads(navHostController: NavHostController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
+                .background(white)
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, bottom = 96.dp)
+                .padding(start = 16.dp, end = 16.dp, bottom = dynamicBottomPadding)
         ) {
             // User Profile Section
             Card(
@@ -242,7 +256,7 @@ fun AddThreads(navHostController: NavHostController) {
                 placeholder = {
                     Text(
                         text = "Start a thread...",
-                        color = Color(0xFF9CA3AF)
+                        color = Black
                     )
                 },
                 modifier = Modifier
@@ -250,7 +264,7 @@ fun AddThreads(navHostController: NavHostController) {
                     .height(120.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color(0xFFD1D5DB),
+                    unfocusedBorderColor = gray,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
                 ),
@@ -276,7 +290,7 @@ fun AddThreads(navHostController: NavHostController) {
                         .height(120.dp)
                         .border(
                             2.dp,
-                            Color(0xFFD1D5DB),
+                            white,
                             RoundedCornerShape(8.dp)
                         )
                         .background(Color.White, RoundedCornerShape(8.dp))
@@ -300,7 +314,7 @@ fun AddThreads(navHostController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.logo),
                             contentDescription = null,
-                            tint = Color(0xFF9CA3AF),
+                            tint = gray,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -395,7 +409,7 @@ fun AddThreads(navHostController: NavHostController) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
-                            tint = Color(0xFFE91E63),
+                            tint = PinkColor,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -447,7 +461,7 @@ fun AddThreads(navHostController: NavHostController) {
                 Button(
                     onClick = { showDialog = false },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE91E63)
+                        containerColor = PinkColor
                     )
                 ) {
                     Text("OK")

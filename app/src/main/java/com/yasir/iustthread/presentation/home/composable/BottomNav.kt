@@ -1,5 +1,6 @@
 package com.yasir.iustthread.presentation.home.composable
 
+import android.content.Context
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -46,18 +49,21 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
 import com.yasir.iustthread.presentation.profile.composable.Profile
 import com.yasir.iustthread.ui.theme.PinkColor
+import com.yasir.iustthread.utils.NavigationUtils
 import com.yasir.iustthread.utils.rememberBottomPadding
 
 @Composable
 fun BottomNav(navController: NavHostController) {
     val bottomNavController = rememberNavController()
+    val context = LocalContext.current
     val bottomPadding = rememberBottomPadding()
     
     Scaffold(
         bottomBar = {
             ModernBottomBar(
                 navController = bottomNavController,
-                bottomPadding = bottomPadding
+                bottomPadding = bottomPadding,
+                context = context
             )
         }
     ) { innerPadding ->
@@ -88,7 +94,8 @@ fun BottomNav(navController: NavHostController) {
 @Composable
 fun ModernBottomBar(
     navController: NavHostController,
-    bottomPadding: Int
+    bottomPadding: Int,
+    context: Context
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry.value?.destination?.route
@@ -101,12 +108,20 @@ fun ModernBottomBar(
         BottomNavItem("Profile", Routes.Profile.routes, Icons.Filled.Person)
     )
 
+    // Calculate additional padding based on navigation type
+    val additionalPadding = if (NavigationUtils.isGestureNavigation(context)) {
+        0.dp
+    } else {
+        bottomPadding.dp
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(72.dp)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(bottom = bottomPadding.dp),
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(bottom = additionalPadding),
         color = Color.White,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {

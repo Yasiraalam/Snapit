@@ -193,7 +193,7 @@ fun Register(navHostController: NavHostController) {
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor
                 )
             )
@@ -217,7 +217,7 @@ fun Register(navHostController: NavHostController) {
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor,
                     errorBorderColor = MaterialTheme.colorScheme.error
                 )
@@ -243,7 +243,7 @@ fun Register(navHostController: NavHostController) {
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor,
                     errorBorderColor = MaterialTheme.colorScheme.error
                 )
@@ -261,7 +261,7 @@ fun Register(navHostController: NavHostController) {
                     .heightIn(min = 80.dp, max = 120.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor
                 )
             )
@@ -300,7 +300,7 @@ fun Register(navHostController: NavHostController) {
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor,
                     errorBorderColor = MaterialTheme.colorScheme.error
                 )
@@ -340,7 +340,7 @@ fun Register(navHostController: NavHostController) {
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor,
                     errorBorderColor = MaterialTheme.colorScheme.error
                 )
