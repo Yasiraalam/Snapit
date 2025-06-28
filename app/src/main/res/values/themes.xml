@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.IustThread" parent="android:Theme.Material.Light.NoActionBar" />
+    
+    <style name="Theme.IustThread.Splash" parent="Theme.IustThread">
+        <item name="android:windowBackground">@color/splash_background</item>
+        <item name="android:statusBarColor">@color/splash_background</item>
+        <item name="android:navigationBarColor">@color/splash_background</item>
+    </style>
+
 </resources>

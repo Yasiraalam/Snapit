@@ -1,27 +1,20 @@
 package com.yasir.iustthread.presentation.home.composable
 
-import NotificationScreen
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,24 +25,16 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -61,17 +46,23 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
 import com.yasir.iustthread.presentation.profile.composable.Profile
 import com.yasir.iustthread.ui.theme.PinkColor
+import com.yasir.iustthread.utils.rememberBottomPadding
 
 @Composable
 fun BottomNav(navController: NavHostController) {
-    val navController1 = rememberNavController()
+    val bottomNavController = rememberNavController()
+    val bottomPadding = rememberBottomPadding()
+    
     Scaffold(
         bottomBar = {
-            ModernBottomBar(navController1)
+            ModernBottomBar(
+                navController = bottomNavController,
+                bottomPadding = bottomPadding
+            )
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController1,
+            navController = bottomNavController,
             startDestination = Routes.Home.routes,
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -79,13 +70,13 @@ fun BottomNav(navController: NavHostController) {
                 HomeScreen(navController)
             }
             composable(Routes.Notification.routes) {
-                NotificationScreen()
+                Notification()
             }
             composable(Routes.Search.routes) {
                 Search(navController)
             }
             composable(Routes.AddThread.routes) {
-                AddThreads(navController1)
+                AddThreads(bottomNavController)
             }
             composable(Routes.Profile.routes) {
                 Profile(navController)
@@ -95,7 +86,10 @@ fun BottomNav(navController: NavHostController) {
 }
 
 @Composable
-fun ModernBottomBar(navController: NavHostController) {
+fun ModernBottomBar(
+    navController: NavHostController,
+    bottomPadding: Int
+) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry.value?.destination?.route
 
@@ -110,9 +104,10 @@ fun ModernBottomBar(navController: NavHostController) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp),
+            .height(72.dp)
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(bottom = bottomPadding.dp),
         color = Color.White,
-        shadowElevation = 8.dp,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
         Row(
@@ -133,7 +128,7 @@ fun ModernBottomBar(navController: NavHostController) {
                     else -> Color(0xFF666666)
                 }
                 val bgColor = when {
-                    isAddButton && isSelected ->PinkColor
+                    isAddButton && isSelected -> PinkColor
                     isAddButton -> Color.White
                     else -> Color.Transparent
                 }

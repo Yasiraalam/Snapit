@@ -3,7 +3,6 @@ package com.yasir.iustthread.presentation.comments.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -26,22 +25,24 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.yasir.iustthread.R
 import com.yasir.iustthread.domain.model.CommentModel
 import com.yasir.iustthread.domain.model.UserModel
 import com.yasir.iustthread.presentation.comments.CommentViewModel
 import com.yasir.iustthread.utils.SharedPref
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsScreen(
-    navController: NavHostController,
+fun CommentsBottomSheet(
     threadId: String,
+    onDismiss: () -> Unit,
     commentViewModel: CommentViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -49,14 +50,21 @@ fun CommentsScreen(
     
     val commentsAndUsers by commentViewModel.commentsAndUsers.observeAsState(initial = emptyList())
     val isCommentAdded by commentViewModel.isCommentAdded.observeAsState(initial = false)
-    val isLoading by commentViewModel.isLoading.observeAsState(initial = false)
     
     var commentText by remember { mutableStateOf("") }
     var isAddingComment by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+    var replyingToComment by remember { mutableStateOf<CommentModel?>(null) }
+    var replyingToUser by remember { mutableStateOf<UserModel?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var commentToDelete by remember { mutableStateOf<CommentModel?>(null) }
     
-    // Listen for comments in real-time when screen loads
+    // Fetch comments when sheet opens
     LaunchedEffect(threadId) {
-        commentViewModel.listenForComments(threadId)
+        isLoading = true
+        commentViewModel.fetchComments(threadId)
+        delay(500)
+        isLoading = false
     }
     
     // Reset comment text when comment is added successfully
@@ -64,106 +72,304 @@ fun CommentsScreen(
         if (isCommentAdded) {
             commentText = ""
             isAddingComment = false
-            // Reset the isCommentAdded state
-            commentViewModel.resetCommentAddedState()
+            replyingToComment = null
+            replyingToUser = null
+            commentViewModel.resetCommentAddedFlag()
         }
     }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
+    // Function to handle comment submission
+    val handleCommentSubmit = {
+        if (commentText.isNotBlank()) {
+            isAddingComment = true
+            if (replyingToComment != null) {
+                commentViewModel.addReply(
+                    threadId = threadId,
+                    parentCommentId = replyingToComment!!.commentId,
+                    replyText = commentText,
+                    context = context
+                )
+            } else {
+                commentViewModel.addComment(threadId, commentText, context)
+            }
+        }
+    }
+    
+    // Function to handle reply click
+    val handleReplyClick = { commentToReply: CommentModel, userToReply: UserModel ->
+        replyingToComment = commentToReply
+        replyingToUser = userToReply
+        // Don't call focusManager.requestFocus() here as it can cause issues
+    }
+    
+    // Function to handle delete click
+    val handleDeleteClick = { comment: CommentModel ->
+        commentToDelete = comment
+        showDeleteDialog = true
+    }
+    
+    // Function to confirm delete
+    val confirmDelete = {
+        commentToDelete?.let { comment ->
+            commentViewModel.deleteComment(comment.commentId, context)
+        }
+        showDeleteDialog = false
+        commentToDelete = null
+    }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 100.dp),
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "Comments",
+                        text = "Comments (${commentsAndUsers.size})",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1F2937)
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    
+                    IconButton(onClick = onDismiss) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color(0xFF1F2937)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
-        },
-        bottomBar = {
-            CommentInputBar(
-                commentText = commentText,
-                onCommentTextChange = { commentText = it },
-                onSendClick = {
-                    if (commentText.isNotBlank()) {
-                        isAddingComment = true
-                        commentViewModel.addComment(threadId, commentText, context)
-                    }
-                },
-                isAddingComment = isAddingComment,
-                isLoading = isLoading
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
-                .padding(paddingValues)
-        ) {
-            if (commentsAndUsers.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.chat),
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = Color(0xFF9CA3AF)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No comments yet",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF6B7280)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Be the first to comment!",
-                            fontSize = 14.sp,
-                            color = Color(0xFF9CA3AF)
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color(0xFF6B7280)
                         )
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                
+                Divider(color = Color(0xFFE5E7EB))
+                
+                // Comments List
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
                 ) {
-                    items(commentsAndUsers) { (comment, user) ->
-                        CommentItem(
-                            comment = comment,
-                            user = user,
-                            currentUserId = currentUserId,
-                            onLikeClick = { isLiked ->
-                                commentViewModel.toggleCommentLike(
-                                    commentId = comment.commentId,
-                                    userId = currentUserId,
-                                    isLiked = isLiked
+                    if (isLoading) {
+                        // Loading state
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFFE91E63),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Loading comments...",
+                                    fontSize = 16.sp,
+                                    color = Color(0xFF6B7280)
                                 )
                             }
-                        )
+                        }
+                    } else if (commentsAndUsers.isEmpty()) {
+                        // Empty state
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.chat),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = Color(0xFF9CA3AF)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "No comments yet",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF6B7280)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Be the first to comment!",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF9CA3AF)
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
+                        ) {
+                            items(commentsAndUsers.filter { it.first.parentCommentId == null }) { (comment, user) ->
+                                CommentItemWithReplies(
+                                    comment = comment,
+                                    user = user,
+                                    currentUserId = currentUserId,
+                                    allComments = commentsAndUsers,
+                                    commentViewModel = commentViewModel,
+                                    onLikeClick = { isLiked ->
+                                        commentViewModel.toggleCommentLike(
+                                            commentId = comment.commentId,
+                                            userId = currentUserId,
+                                            isLiked = isLiked
+                                        )
+                                    },
+                                    onReplyClick = handleReplyClick,
+                                    onDeleteClick = handleDeleteClick
+                                )
+                            }
+                        }
                     }
+                }
+                
+                // Reply indicator
+                if (replyingToComment != null && replyingToUser != null) {
+                    ReplyIndicator(
+                        replyingToUser = replyingToUser!!,
+                        onCancelReply = {
+                            replyingToComment = null
+                            replyingToUser = null
+                            commentText = ""
+                        }
+                    )
+                }
+                
+                // Comment Input
+                CommentInputBar(
+                    commentText = commentText,
+                    onCommentTextChange = { commentText = it },
+                    onSendClick = handleCommentSubmit,
+                    isAddingComment = isAddingComment,
+                    placeholder = if (replyingToComment != null) {
+                        "Reply to ${replyingToUser?.name ?: "comment"}..."
+                    } else {
+                        "Add a comment..."
+                    }
+                )
+            }
+        }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    text = "Delete Comment",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F2937)
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete this comment? This action cannot be undone.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF6B7280)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = confirmDelete,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color(0xFFDC2626)
+                    )
+                ) {
+                    Text(
+                        text = "Delete",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text(
+                        text = "Cancel",
+                        fontSize = 14.sp,
+                        color = Color(0xFF6B7280)
+                    )
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun CommentItemWithReplies(
+    comment: CommentModel,
+    user: UserModel,
+    currentUserId: String,
+    allComments: List<Pair<CommentModel, UserModel>>,
+    commentViewModel: CommentViewModel,
+    onLikeClick: (Boolean) -> Unit,
+    onReplyClick: (CommentModel, UserModel) -> Unit,
+    onDeleteClick: (CommentModel) -> Unit
+) {
+    val replies = allComments.filter { it.first.parentCommentId == comment.commentId }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        // Main comment
+        CommentItem(
+            comment = comment,
+            user = user,
+            currentUserId = currentUserId,
+            onLikeClick = onLikeClick,
+            onReplyClick = onReplyClick,
+            onDeleteClick = onDeleteClick
+        )
+        
+        // Replies
+        if (replies.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier.padding(start = 32.dp)
+            ) {
+                replies.forEach { (reply, replyUser) ->
+                    CommentItem(
+                        comment = reply,
+                        user = replyUser,
+                        currentUserId = currentUserId,
+                        onLikeClick = { isLiked ->
+                            commentViewModel.toggleCommentLike(
+                                commentId = reply.commentId,
+                                userId = currentUserId,
+                                isLiked = isLiked
+                            )
+                        },
+                        onReplyClick = onReplyClick,
+                        onDeleteClick = onDeleteClick,
+                        isReply = true
+                    )
                 }
             }
         }
@@ -175,15 +381,22 @@ fun CommentItem(
     comment: CommentModel,
     user: UserModel,
     currentUserId: String,
-    onLikeClick: (Boolean) -> Unit
+    onLikeClick: (Boolean) -> Unit,
+    onReplyClick: (CommentModel, UserModel) -> Unit,
+    onDeleteClick: (CommentModel) -> Unit,
+    isReply: Boolean = false
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .padding(vertical = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isReply) Color(0xFFF9FAFB) else Color.White
+        ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isReply) 0.dp else 1.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -195,21 +408,21 @@ fun CommentItem(
                     model = user.imageUri,
                     contentDescription = "User Avatar",
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(if (isReply) 24.dp else 32.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(if (isReply) 24.dp else 32.dp)
                         .background(Color(0xFFE91E63), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = user.name.take(2).uppercase(),
                         color = Color.White,
-                        fontSize = 12.sp,
+                        fontSize = if (isReply) 10.sp else 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -226,25 +439,71 @@ fun CommentItem(
                 ) {
                     Text(
                         text = user.name.ifEmpty { "Unknown User" },
-                        fontSize = 14.sp,
+                        fontSize = if (isReply) 12.sp else 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1F2937)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = formatTimeAgo(comment.timeStamp),
-                        fontSize = 12.sp,
+                        fontSize = if (isReply) 10.sp else 12.sp,
                         color = Color(0xFF6B7280)
                     )
+                    
+                    // Three-dot menu for user's own comments
+                    if (comment.userId == currentUserId) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Box {
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier.size(if (isReply) 20.dp else 24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "More options",
+                                    tint = Color(0xFF6B7280),
+                                    modifier = Modifier.size(if (isReply) 14.dp else 16.dp)
+                                )
+                            }
+                            
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                                modifier = Modifier.background(Color.White)
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Delete",
+                                            fontSize = 14.sp,
+                                            color = Color(0xFFDC2626)
+                                        )
+                                    },
+                                    onClick = {
+                                        onDeleteClick(comment)
+                                        showMenu = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                            tint = Color(0xFFDC2626),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
                     text = comment.comment,
-                    fontSize = 14.sp,
+                    fontSize = if (isReply) 12.sp else 14.sp,
                     color = Color(0xFF4B5563),
-                    lineHeight = 18.sp
+                    lineHeight = if (isReply) 16.sp else 18.sp
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -265,12 +524,12 @@ fun CommentItem(
                             contentDescription = "Like",
                             tint = if (comment.likedBy.contains(currentUserId)) 
                                 Color(0xFFE91E63) else Color(0xFF6B7280),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(if (isReply) 14.dp else 16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = comment.likes.toString(),
-                            fontSize = 12.sp,
+                            fontSize = if (isReply) 10.sp else 12.sp,
                             color = Color(0xFF6B7280)
                         )
                     }
@@ -279,11 +538,56 @@ fun CommentItem(
                     
                     Text(
                         text = "Reply",
-                        fontSize = 12.sp,
+                        fontSize = if (isReply) 10.sp else 12.sp,
                         color = Color(0xFF6B7280),
-                        modifier = Modifier.clickable { /* Handle reply */ }
+                        modifier = Modifier.clickable { 
+                            onReplyClick(comment, user)
+                        }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReplyIndicator(
+    replyingToUser: UserModel,
+    onCancelReply: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFF3F4F6)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.reply),
+                contentDescription = null,
+                tint = Color(0xFF6B7280),
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Replying to ${replyingToUser.name}",
+                fontSize = 12.sp,
+                color = Color(0xFF6B7280)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(
+                onClick = onCancelReply,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Cancel reply",
+                    tint = Color(0xFF6B7280),
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
@@ -295,7 +599,7 @@ fun CommentInputBar(
     onCommentTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
     isAddingComment: Boolean,
-    isLoading: Boolean
+    placeholder: String
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -305,12 +609,12 @@ fun CommentInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(bottom = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // User Avatar
             val context = LocalContext.current
-            val currentUserId = SharedPref.getUserId(context)
             val userImageUri = SharedPref.getImageUrl(context)
             
             if (userImageUri.isNotEmpty()) {
@@ -346,13 +650,12 @@ fun CommentInputBar(
                 onValueChange = onCommentTextChange,
                 placeholder = {
                     Text(
-                        text = "Add a comment...",
+                        text = if (isAddingComment) "Adding comment..." else placeholder,
                         fontSize = 14.sp,
                         color = Color(0xFF9CA3AF)
                     )
                 },
                 modifier = Modifier.weight(1f),
-                enabled = !isLoading,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFE91E63),
                     unfocusedBorderColor = Color(0xFFE5E7EB)
@@ -361,7 +664,8 @@ fun CommentInputBar(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Send
                 ),
-                maxLines = 3
+                maxLines = 3,
+                enabled = !isAddingComment
             )
             
             Spacer(modifier = Modifier.width(12.dp))
@@ -369,7 +673,7 @@ fun CommentInputBar(
             // Send Button
             IconButton(
                 onClick = onSendClick,
-                enabled = commentText.isNotBlank() && !isAddingComment && !isLoading
+                enabled = commentText.isNotBlank() && !isAddingComment
             ) {
                 if (isAddingComment) {
                     CircularProgressIndicator(
@@ -381,7 +685,7 @@ fun CommentInputBar(
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send",
-                        tint = if (commentText.isNotBlank() && !isLoading) Color(0xFFE91E63) else Color(0xFF9CA3AF),
+                        tint = if (commentText.isNotBlank()) Color(0xFFE91E63) else Color(0xFF9CA3AF),
                         modifier = Modifier.size(24.dp)
                     )
                 }

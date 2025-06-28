@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "Users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "test_write": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "test_comprehensive": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "test_comprehensive_map": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "test_comprehensive_user": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+} 

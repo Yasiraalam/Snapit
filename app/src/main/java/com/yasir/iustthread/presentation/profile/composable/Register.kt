@@ -51,15 +51,14 @@ fun Register(navHostController: NavHostController) {
     var fullName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") } // Changed to var and made optional
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val bio by remember { mutableStateOf("") } // Kept for ViewModel, but no UI field
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
-    val loading by remember { mutableStateOf(false) }
 
     // --- Visibility and Error States ---
     var passwordVisible by remember { mutableStateOf(false) }
@@ -74,6 +73,8 @@ fun Register(navHostController: NavHostController) {
     val passwordRegex = Regex("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#\$%^&*]).{8,}\$")
     val authViewModel: AuthViewModel = remember { AuthViewModel() } // Use remember for ViewModel
     val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+    val loading by authViewModel.loading.observeAsState(false)
+    val error by authViewModel.error.observeAsState(null)
     val context = LocalContext.current
 
     // --- Image Picker Logic (from your original code) ---
@@ -101,6 +102,14 @@ fun Register(navHostController: NavHostController) {
         }
     }
 
+    // Handle ViewModel errors
+    LaunchedEffect(error) {
+        if (error != null) {
+            dialogMessage = error!!
+            showDialog = true
+        }
+    }
+
     // Function to handle registration click
     fun handleRegister() {
         // Reset errors
@@ -111,8 +120,8 @@ fun Register(navHostController: NavHostController) {
 
         val hasError = listOf(usernameError, emailError, passwordError, confirmPasswordError).any { it != null }
 
-        if (fullName.isBlank() || imageUri == null) {
-            dialogMessage = "Please fill all details, including a profile photo."
+        if (fullName.isBlank()) {
+            dialogMessage = "Please enter your full name."
             showDialog = true
             return
         }
@@ -123,7 +132,7 @@ fun Register(navHostController: NavHostController) {
             return
         }
 
-        authViewModel.register(email, password, fullName, bio, username, imageUri!!, context)
+        authViewModel.register(email, password, fullName, bio, username, imageUri, context)
     }
     
     Surface(
@@ -132,8 +141,8 @@ fun Register(navHostController: NavHostController) {
     ) {
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -164,7 +173,14 @@ fun Register(navHostController: NavHostController) {
                     permissionLauncher.launch(permissionToRequest)
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Profile Picture (Optional)", 
+                fontSize = 12.sp, 
+                color = Color.Gray, 
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Input Fields with improved styling
             OutlinedTextField(
@@ -173,9 +189,7 @@ fun Register(navHostController: NavHostController) {
                 label = { Text("Full Name", fontSize = 14.sp) },
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Enter your full name", fontSize = 14.sp) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp, max = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
@@ -191,9 +205,7 @@ fun Register(navHostController: NavHostController) {
                 label = { Text("Username", fontSize = 14.sp) },
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Choose a username", fontSize = 14.sp) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp, max = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = usernameError != null,
                 supportingText = { 
@@ -219,9 +231,7 @@ fun Register(navHostController: NavHostController) {
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Enter your email", fontSize = 14.sp) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp, max = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = emailError != null,
                 supportingText = { 
@@ -236,6 +246,23 @@ fun Register(navHostController: NavHostController) {
                     unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
                     focusedLabelColor = PinkColor,
                     errorBorderColor = MaterialTheme.colorScheme.error
+                )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = bio,
+                onValueChange = { bio = it },
+                label = { Text("Bio (Optional)", fontSize = 14.sp) },
+                textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
+                placeholder = { Text("Tell us about yourself...", fontSize = 14.sp) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 80.dp, max = 120.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PinkColor,
+                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                    focusedLabelColor = PinkColor
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -261,9 +288,7 @@ fun Register(navHostController: NavHostController) {
                         )
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp, max = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = passwordError != null,
                 supportingText = { 
@@ -303,9 +328,7 @@ fun Register(navHostController: NavHostController) {
                         )
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp, max = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = confirmPasswordError != null,
                 supportingText = { 
@@ -358,7 +381,7 @@ fun Register(navHostController: NavHostController) {
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
 
         // Alert Dialog for errors/validation

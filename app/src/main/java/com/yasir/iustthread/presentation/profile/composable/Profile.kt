@@ -3,13 +3,17 @@ package com.yasir.iustthread.presentation.profile.composable
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +21,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -81,6 +88,8 @@ import com.yasir.iustthread.presentation.login.AuthViewModel
 import com.yasir.iustthread.presentation.profile.UserViewModel
 import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.utils.SharedPref
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.platform.LocalLayoutDirection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,6 +156,7 @@ fun Profile(navHostController: NavHostController) {
     }
 
     Scaffold(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         topBar = {
             TopAppBar(
                 title = {
@@ -159,12 +169,7 @@ fun Profile(navHostController: NavHostController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { 
-                        navHostController.navigate(Routes.Home.routes) {
-                            popUpTo(Routes.Profile.routes) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
-                        }
+                        navHostController.navigateUp()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -266,7 +271,8 @@ fun Profile(navHostController: NavHostController) {
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     // Profile Header Section
                     item {
@@ -301,7 +307,7 @@ fun Profile(navHostController: NavHostController) {
                                         )
                                     } else {
                                         Text(
-                                            text = user.name.take(2).uppercase().ifEmpty { "SJ" },
+                                            text = user.name.take(2).uppercase().ifEmpty { "YA" },
                                             color = Color.White,
                                             fontSize = 24.sp,
                                             fontWeight = FontWeight.Bold
@@ -326,6 +332,34 @@ fun Profile(navHostController: NavHostController) {
                                         label = "following"
                                     )
                                 }
+
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Edit Profile Button
+                            Button(
+                                onClick = {
+                                    navHostController.navigate(Routes.EditProfile.routes)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(
+                                        width = 2.dp,
+                                        color = PinkColor,
+                                        shape = RoundedCornerShape(25.dp)
+                                    ),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent
+                                ),
+                                shape = RoundedCornerShape(25.dp)
+                            ) {
+                                Text(
+                                    text = "Edit Profile",
+                                    color = PinkColor,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -370,7 +404,7 @@ fun Profile(navHostController: NavHostController) {
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             // Posts Section Header
                             Row(

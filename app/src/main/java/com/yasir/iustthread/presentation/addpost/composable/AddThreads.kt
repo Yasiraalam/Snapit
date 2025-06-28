@@ -14,6 +14,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -80,114 +83,109 @@ fun AddThreads(navHostController: NavHostController) {
             thread = ""
             imageUri = null
             Toast.makeText(context, "Thread Posted!", Toast.LENGTH_SHORT).show()
-            navHostController.navigate(Routes.Home.routes) {
-                popUpTo(Routes.AddThread.routes) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
+            navHostController.navigateUp()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
-    ) {
-        // Top App Bar
-        TopAppBar(
-            title = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                PinkColor,
-                                CircleShape
-                            )
-                            .padding(6.dp),
-                        tint = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Add Thread",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = PinkColor
-                    )
-                }
-            },
-            navigationIcon = {
-                IconButton(onClick = { navHostController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = PinkColor
-                    )
-                }
-            },
-            actions = {
-                if (loading.value) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .padding(end = 16.dp),
-                        color = PinkColor,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Button(
-                        onClick = {
-                            if (imageUri == null && thread.isNotEmpty()) {
-                                loading.value = true
-                                threadViewModel.saveData(
-                                    thread,
-                                    FirebaseAuth.getInstance().currentUser!!.uid,
-                                    "",
-                                    loading
-                                )
-                            } else if (imageUri != null) {
-                                loading.value = true
-                                threadViewModel.saveImage(
-                                    thread,
-                                    FirebaseAuth.getInstance().currentUser!!.uid,
-                                    imageUri!!,
-                                    loading,
-                                    context
-                                )
-                            } else {
-                                showDialog = true
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = PinkColor
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.padding(end = 8.dp)
+    Scaffold(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    PinkColor,
+                                    CircleShape
+                                )
+                                .padding(6.dp),
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Post",
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium
+                            text = "Add Thread",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PinkColor
                         )
                     }
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.White
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navHostController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = PinkColor
+                        )
+                    }
+                },
+                actions = {
+                    if (loading.value) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 16.dp),
+                            color = PinkColor,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Button(
+                            onClick = {
+                                if (imageUri == null && thread.isNotEmpty()) {
+                                    loading.value = true
+                                    threadViewModel.saveData(
+                                        thread,
+                                        FirebaseAuth.getInstance().currentUser!!.uid,
+                                        "",
+                                        loading
+                                    )
+                                } else if (imageUri != null) {
+                                    loading.value = true
+                                    threadViewModel.saveImage(
+                                        thread,
+                                        FirebaseAuth.getInstance().currentUser!!.uid,
+                                        imageUri!!,
+                                        loading,
+                                        context
+                                    )
+                                } else {
+                                    showDialog = true
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PinkColor
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "Post",
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        )
-        
+        }
+    ) { paddingValues ->
         // Main Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFFF8F9FA))
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(start = 16.dp, end = 16.dp, bottom = 96.dp)
         ) {
             // User Profile Section
             Card(

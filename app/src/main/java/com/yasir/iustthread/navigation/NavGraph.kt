@@ -1,6 +1,5 @@
 package com.yasir.iustthread.navigation
 
-import NotificationScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,10 +34,10 @@ import com.yasir.iustthread.internetConnectiviy.ConnectivityObserver
 import com.yasir.iustthread.internetConnectiviy.NetworkConnectivityObserver
 import com.yasir.iustthread.navigation.Routes.Home
 import com.yasir.iustthread.presentation.addpost.composable.AddThreads
-import com.yasir.iustthread.presentation.comments.composable.CommentsScreen
 import com.yasir.iustthread.presentation.home.composable.BottomNav
 import com.yasir.iustthread.presentation.home.composable.HomeScreen
 import com.yasir.iustthread.presentation.login.composable.Login
+import com.yasir.iustthread.presentation.home.composable.Notification
 import com.yasir.iustthread.presentation.home.composable.OtherUsers
 import com.yasir.iustthread.presentation.profile.composable.Profile
 import com.yasir.iustthread.presentation.profile.composable.Register
@@ -44,6 +45,7 @@ import com.yasir.iustthread.presentation.profile.composable.UserPostsFeed
 import com.yasir.iustthread.presentation.home.composable.Search
 import com.yasir.iustthread.presentation.home.composable.Splash
 import com.yasir.iustthread.presentation.profile.UserViewModel
+import com.yasir.iustthread.presentation.profile.composable.EditProfile
 
 @Composable
 fun NavGraph(
@@ -73,20 +75,13 @@ fun NavGraph(
                 }
 
                 composable(Routes.Notification.routes){
-                    NotificationScreen()
+                    Notification()
                 }
 
                 composable(Routes.Search.routes){
                     Search(navController)
                 }
 
-                composable(Routes.AddThread.routes){
-                    AddThreads(navController)
-                }
-
-                composable(Routes.Profile.routes){
-                    Profile(navController)
-                }
                 composable(Routes.BottomNav.routes){
                     BottomNav(navController)
                 }
@@ -96,15 +91,17 @@ fun NavGraph(
                 composable(Routes.Register.routes){
                     Register(navController)
                 }
+                composable(Routes.Profile.routes){
+                    Profile(navController)
+                }
+                composable(Routes.EditProfile.routes){
+                    EditProfile(navController)
+                }
                 composable(Routes.OtherUsers.routes){
                     val data = it.arguments!!.getString("data")
                     OtherUsers(navController,data!!)
                 }
-                
-                composable(Routes.Comments.routes){
-                    val threadId = it.arguments!!.getString("threadId")
-                    CommentsScreen(navController, threadId!!)
-                }
+
                 
                 composable("user_posts_feed/{startIndex}") { backStackEntry ->
                     val startIndex = backStackEntry.arguments?.getString("startIndex")?.toIntOrNull() ?: 0
@@ -124,7 +121,10 @@ fun NavGraph(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

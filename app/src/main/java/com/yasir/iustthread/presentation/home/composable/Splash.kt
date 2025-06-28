@@ -132,7 +132,7 @@ fun Splash(navController: NavHostController) {
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.threads_logo),
-                    contentDescription = "Snappit Logo",
+                    contentDescription = "Snapit Logo",
                     modifier = Modifier.size(80.dp),
                     tint = PinkColor
                 )
@@ -142,7 +142,7 @@ fun Splash(navController: NavHostController) {
             
             // App name with animation
             Text(
-                text = "Snappit",
+                text = "Snapit",
                 fontSize = 42.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,

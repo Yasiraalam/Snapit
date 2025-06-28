@@ -1,35 +1,31 @@
-# Snappit App
+# IUST Thread App
 
 ## Description
-**Snappit** is a native Android social media application built using Kotlin and Jetpack Compose. It enables users to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments — all within a sleek and intuitive interface.
+The IUST Thread App is a native Android application built using Kotlin and Jetpack Compose. It provides a platform for students and faculty of the Islamic University of Science and Technology (IUST) to engage in discussions, share posts with images, follow other users, view profiles, and interact with content through likes and comments.
 
 ## Features
-- **User Authentication:** Secure sign up, login, and logout functionality using Firebase Authentication.
-- **Post Creation:** Users can create and share image-based posts.
-- **User Profiles:** View your own or other users’ profiles.
-- **Follow System:** Follow or unfollow other users to stay updated on their activity.
-- **Likes and Comments:** Like posts and participate in discussions via comments.
-- **Search:** Easily find users by searching their names or usernames.
+- User authentication: Users can sign up, log in, and log out securely using Firebase Authentication.
+- Thread creation: Users can create new discussion threads with images on various topics.
+- Profile viewing: Users can view other users' profiles to learn more about them.
+- Follow functionality: Users can follow/unfollow other users to stay updated on their activities.
+- Like and comment: Users can like and comment on threads to engage in discussions.
 
 ## Upcoming Features
-- **Real-time Notifications**
-- **Post Sharing**
-- **Hashtags and Mentions Support**
+- Likes and comments: The ability to like and comment on threads will be added in future updates.
 
 ## Technologies Used
+- Frontend:
+  - Kotlin with Jetpack Compose for building the user interface
+  - coil for loading and caching images
 
-- **Frontend:**
-  - Kotlin with Jetpack Compose for a modern, reactive UI
-  - Coil for efficient image loading and caching
-
-- **Backend:**
-  - Firebase Authentication for secure user management
-  - Firebase Firestore to store user data, posts, likes, comments
-  - Firebase Storage to manage and serve uploaded images
+- Backend:
+  - Firebase Authentication for user authentication
+  - Firebase Firestore for storing user data, threads, and comments
+  - Firebase Storage for storing images associated with threads
 
 ## Getting Started
 
-To get a local copy of Snapit up and running, follow these simple steps.
+To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
@@ -37,42 +33,46 @@ You will need to have Java Development Kit (JDK) 17 installed on your machine. T
 
 ### Installation
 
-1. **Clone the repo**
+1.  **Clone the repo**
     ```sh
-    git clone https://github.com/Yasiraalam/snapit.git
+    git clone https://github.com/Yasiraalam/iust-Thread.git
     ```
+2.  **Install JDK 17**
 
-2. **Install JDK 17**
+    *   **macOS (using Homebrew)**
+        If you have [Homebrew](https://brew.sh/) installed, you can run the following command:
+        ```sh
+        brew install openjdk@17
+        ```
+        After installation, make sure to set your `JAVA_HOME` environment variable. You can usually find the correct path by running `/usr/libexec/java_home -v 17`. Then add the following to your shell's configuration file (e.g., `~/.zshrc` or `~/.bash_profile`):
+        ```sh
+        export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        ```
 
-    **macOS (using Homebrew)**
-    ```sh
-    brew install openjdk@17
-    ```
-    Then add the following to your shell configuration (e.g., `~/.zshrc` or `~/.bash_profile`):
-    ```sh
-    export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
-    export PATH="$JAVA_HOME/bin:$PATH"
-    ```
+    *   **Other Systems**
+        You can download JDK 17 from a source like [Adoptium](https://adoptium.net/temurin/releases/?version=17). Make sure to set the `JAVA_HOME` environment variable to the installation directory.
 
-    **Other Systems:**
-    Download JDK 17 from [Adoptium](https://adoptium.net/temurin/releases/?version=17) and set your `JAVA_HOME` accordingly.
-
-3. **Build the project**
+3.  **Build the project**
+    Once the JDK is installed and configured, you can build the project using the Gradle wrapper. First, make sure the wrapper is executable:
     ```sh
     chmod +x gradlew
+    ```
+    Then, build the project:
+    ```sh
     ./gradlew build
     ```
 
-## Demo Pics
-
-<img src="https://github.com/user-attachments/assets/3993ce40-8a48-48f2-aae6-ab7746abe31b" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/0c21e40b-9cab-4295-9a8d-5cff599a75a2" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/29ae1398-8e05-4a95-b211-d69b0e468219" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/4d512e3e-faf9-4ee9-9bcf-57de369cdefb" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/43be7e23-6e8e-4271-8254-39aa82c03f75" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/753d7a2c-5fc7-4d70-870f-5279faabc837" width="220" height="450"/>
-<img src="https://github.com/user-attachments/assets/753d7a2c-5fc7-4d70-870f-5279faabc837" width="220" height="450"/>
-
+## Demo Pics 
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/adb87dd3-846d-4307-b412-4a6585c9f2e3" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/f6af99e1-5618-47d5-97de-3dea2b60f02b" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/e3d33abf-3f70-4fa9-9352-294e9d6e30dd" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/402a904f-36bd-46b8-bb32-5b5ebb91aed6" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/d3454ec0-518c-4e9b-bb12-1e1ec86e423c" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/402a904f-36bd-46b8-bb32-5b5ebb91aed6" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/2d6f41d0-63c7-46e5-8f9c-3b018c53a973" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/02ce4e98-b3d1-4feb-af36-f0778e84e0b9" alt="Description of the image" width="220" height="450"/>
+<img src="https://github.com/Yasiraalam/iust-Thread/assets/94714966/2fbeefd2-2819-4eaf-b89a-03b349cc0bc0" alt="Description of the image" width="220" height="450"/>
 
 
 

@@ -7,7 +7,8 @@ data class CommentModel(
     val comment: String = "",
     val timeStamp: String = "",
     val likedBy: List<String> = emptyList(),
-    val likes: Int = 0
+    val likes: Int = 0,
+    val parentCommentId: String? = null // null for top-level comments, commentId for replies
 ) {
     constructor() : this(
         "",
@@ -16,6 +17,7 @@ data class CommentModel(
         "",
         "",
         emptyList(),
-        0
+        0,
+        null
     )
 } 
