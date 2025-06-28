@@ -1,5 +1,6 @@
 package com.yasir.iustthread.presentation.login.composable
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -40,6 +41,7 @@ import com.yasir.iustthread.ui.theme.TextGray
 import com.yasir.iustthread.R
 
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun Login(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
