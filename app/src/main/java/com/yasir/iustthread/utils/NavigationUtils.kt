@@ -75,7 +75,7 @@ object NavigationUtils {
         return if (isGestureNavigation(context)) {
             0 // No extra padding for gesture navigation
         } else {
-            48 // Add padding for three-button navigation (increased for better visibility)
+            45 // Increased padding for three-button navigation for better visibility and touch targets
         }
     }
     
@@ -96,6 +96,18 @@ object NavigationUtils {
             0
         }
     }
+    
+    /**
+     * Returns appropriate content bottom padding to prevent UI elements from being cut off
+     * by the bottom navigation bar
+     */
+    fun getContentBottomPadding(context: Context): Int {
+        return if (isGestureNavigation(context)) {
+            100 // Standard padding for gesture navigation
+        } else {
+            140 // Extra padding for three-button navigation
+        }
+    }
 }
 
 /**
@@ -106,5 +118,16 @@ fun rememberBottomPadding(): Int {
     val context = LocalContext.current
     return remember(context) {
         NavigationUtils.getBottomPadding(context)
+    }
+}
+
+/**
+ * Composable function to get content bottom padding to prevent UI elements from being cut off
+ */
+@Composable
+fun rememberContentBottomPadding(): Int {
+    val context = LocalContext.current
+    return remember(context) {
+        NavigationUtils.getContentBottomPadding(context)
     }
 } 

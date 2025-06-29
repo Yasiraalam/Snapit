@@ -57,7 +57,7 @@ fun BottomNav(navController: NavHostController) {
     val bottomNavController = rememberNavController()
     val context = LocalContext.current
     val bottomPadding = rememberBottomPadding()
-    
+
     Scaffold(
         bottomBar = {
             ModernBottomBar(
@@ -108,8 +108,17 @@ fun ModernBottomBar(
         BottomNavItem("Profile", Routes.Profile.routes, Icons.Filled.Person)
     )
 
-    // Calculate additional padding based on navigation type
-    val additionalPadding = if (NavigationUtils.isGestureNavigation(context)) {
+    // Calculate dynamic height and padding based on navigation type
+    val isGestureNavigation = NavigationUtils.isGestureNavigation(context)
+
+    val bottomBarHeight = if (isGestureNavigation) {
+        60.dp
+    } else {
+        105.dp // Increased height for three-button navigation
+    }
+
+    // Only add bottom padding for three-button navigation
+    val additionalPadding = if (isGestureNavigation) {
         0.dp
     } else {
         bottomPadding.dp
@@ -118,9 +127,7 @@ fun ModernBottomBar(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+            .height(bottomBarHeight)
             .padding(bottom = additionalPadding),
         color = Color.White,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
@@ -128,14 +135,14 @@ fun ModernBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 0.dp, vertical = 0.dp),
+                .padding(horizontal = 0.dp, vertical = 12.dp), // Increased vertical padding
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            navItems.forEachIndexed { index, item ->
+            navItems.forEachIndexed { _, item ->
                 val isSelected = currentRoute == item.route
                 val isAddButton = item.title == "Add"
-                val iconSize = if (isAddButton) 32.dp else 26.dp
+                val iconSize = if (isAddButton) 34.dp else 28.dp // Increased icon sizes
                 val iconTint = when {
                     isAddButton && isSelected -> Color.White
                     isAddButton -> PinkColor
@@ -171,7 +178,7 @@ fun ModernBottomBar(
                             }
                         },
                         modifier = Modifier
-                            .size(if (isAddButton) 56.dp else 48.dp)
+                            .size(if (isAddButton) 64.dp else 56.dp) // Increased button sizes
                             .scale(scale)
                             .clip(CircleShape)
                             .background(bgColor)

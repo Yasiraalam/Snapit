@@ -187,12 +187,14 @@ fun Splash(navController: NavHostController) {
         delay(3500) // Increased delay to show animations
         if (FirebaseAuth.getInstance().currentUser != null) {
             navController.navigate(Routes.BottomNav.routes) {
-                popUpTo(navController.graph.startDestinationId)
+                // Clear the entire back stack and make BottomNav the new start destination
+                popUpTo(0) { inclusive = true }
                 launchSingleTop = true
             }
         } else {
             navController.navigate(Routes.Login.routes) {
-                popUpTo(navController.graph.startDestinationId)
+                // Clear the entire back stack and make Login the new start destination
+                popUpTo(0) { inclusive = true }
                 launchSingleTop = true
             }
         }

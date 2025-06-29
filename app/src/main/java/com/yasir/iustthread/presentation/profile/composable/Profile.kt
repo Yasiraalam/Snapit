@@ -179,17 +179,17 @@ fun Profile(
                         color = Color.Black
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = { 
-                        navHostController.navigateUp()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
-                    }
-                },
+//                navigationIcon = {
+//                    IconButton(onClick = {
+//                        navHostController.popBackStack()
+//                    }) {
+//                        Icon(
+//                            imageVector = Icons.Default.ArrowBack,
+//                            contentDescription = "Back",
+//                            tint = Color.Black
+//                        )
+//                    }
+//                },
                 actions = {
                     Box(
                         modifier = Modifier.padding(12.dp),
