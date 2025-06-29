@@ -765,29 +765,80 @@ fun SkeletonPostCard() {
     }
 }
 
-// Share functionality
-private fun sharePost(context: android.content.Context, post: Post) {
-    val shareText = buildString {
-        append("Check out this post by @${post.userUsername}:\n\n")
-        append(post.content)
-        if (post.imageUrl != null) {
-            append("\n\n[Image included]")
+// Utility function to generate share text
+private fun generateShareText(post: Post): String {
+    return buildString {
+        append("📱 Check out this amazing post by @${post.userUsername} on Snapit!\n\n")
+        
+        // Add post content (truncate if too long)
+        val maxContentLength = 200
+        val content = if (post.content.length > maxContentLength) {
+            post.content.take(maxContentLength) + "..."
+        } else {
+            post.content
         }
-        append("\n\nShared via IUST Thread")
+        append(content)
+        
+        // Add image indicator
+        if (post.imageUrl != null) {
+            append("\n\n📸 [Image included]")
+        }
+        
+        // Add engagement info
+        if (post.likes > 0 || post.comments > 0) {
+            append("\n\n")
+            if (post.likes > 0) append("❤️ ${post.likes} likes")
+            if (post.likes > 0 && post.comments > 0) append(" • ")
+            if (post.comments > 0) append("💬 ${post.comments} comments")
+        }
+        
+        // Add call to action without external links
+        append("\n\n")
+        append("📱 Open Snapit to see more amazing posts!")
+        append("\n\n")
+        append("Shared via Snapit ✨")
     }
+}
+
+// Enhanced Share functionality
+private fun sharePost(context: android.content.Context, post: Post) {
+    // Generate share text
+    val shareText = generateShareText(post)
     
+    // Create share intent
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, shareText)
-        putExtra(Intent.EXTRA_SUBJECT, "Post by @${post.userUsername}")
+        putExtra(Intent.EXTRA_SUBJECT, "Amazing post by @${post.userUsername} on Snapit!")
+        
+        // Add flags for better sharing experience
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     
     try {
-        context.startActivity(Intent.createChooser(shareIntent, "Share Post"))
+        // Create chooser with custom title
+        val chooserIntent = Intent.createChooser(shareIntent, "Share this amazing post!")
+        
+        // Add additional flags for better UX
+        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        
+        context.startActivity(chooserIntent)
     } catch (e: Exception) {
         // Handle any exceptions
         android.util.Log.e("SharePost", "Error sharing post: ${e.message}")
+        
+        // Fallback: try to share with just text
+        try {
+            val fallbackIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            context.startActivity(Intent.createChooser(fallbackIntent, "Share Post"))
+        } catch (fallbackException: Exception) {
+            android.util.Log.e("SharePost", "Fallback sharing also failed: ${fallbackException.message}")
+        }
     }
 }
 

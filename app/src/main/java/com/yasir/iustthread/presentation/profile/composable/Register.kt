@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -26,8 +27,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -42,8 +45,6 @@ import com.yasir.iustthread.navigation.Routes
 import com.yasir.iustthread.presentation.login.AuthViewModel
 import com.yasir.iustthread.R
 import com.yasir.iustthread.ui.theme.PinkColor
-
-import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun Register(navHostController: NavHostController) {
@@ -76,6 +77,7 @@ fun Register(navHostController: NavHostController) {
     val loading by authViewModel.loading.observeAsState(false)
     val error by authViewModel.error.observeAsState(null)
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     // --- Image Picker Logic (from your original code) ---
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -192,6 +194,10 @@ fun Register(navHostController: NavHostController) {
                 placeholder = { Text("Enter your full name", fontSize = 14.sp) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
                     unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
@@ -208,6 +214,10 @@ fun Register(navHostController: NavHostController) {
                 placeholder = { Text("Choose a username", fontSize = 14.sp) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
                 isError = usernameError != null,
                 supportingText = { 
                     if (usernameError != null) Text(
@@ -231,7 +241,10 @@ fun Register(navHostController: NavHostController) {
                 label = { Text("Email", fontSize = 14.sp) },
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Enter your email", fontSize = 14.sp) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = emailError != null,
@@ -260,6 +273,10 @@ fun Register(navHostController: NavHostController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 80.dp, max = 120.dp),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PinkColor,
                     unfocusedBorderColor = Color.Black.copy(alpha = 0.5f),
@@ -275,7 +292,10 @@ fun Register(navHostController: NavHostController) {
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Create a password", fontSize = 14.sp) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next
+                ),
                 trailingIcon = {
                     val image = if (passwordVisible) painterResource(R.drawable.visible_icon) else painterResource(R.drawable.visibility_off_icon)
                     IconButton(
@@ -315,7 +335,10 @@ fun Register(navHostController: NavHostController) {
                 textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                 placeholder = { Text("Confirm your password", fontSize = 14.sp) },
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 trailingIcon = {
                     val image = if (confirmPasswordVisible) painterResource(R.drawable.visible_icon) else painterResource(R.drawable.visibility_off_icon)
                     IconButton(
@@ -350,7 +373,10 @@ fun Register(navHostController: NavHostController) {
 
             // Register Button
             Button(
-                onClick = { handleRegister() },
+                onClick = { 
+                    focusManager.clearFocus()
+                    handleRegister() 
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = PinkColor),
                 modifier = Modifier
                     .fillMaxWidth()
