@@ -154,14 +154,8 @@ fun OtherUsers(
             },
             navigationIcon = {
                 IconButton(onClick = { 
-                    // Navigate to the Home screen within the BottomNav
-                    navHostController.navigate(Routes.Home.routes) {
-                        // Pop up to the start destination (Home) and make it the only destination
-                        popUpTo(navHostController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                    }
+                    // Navigate back to the previous screen
+                    navHostController.popBackStack()
                 }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,

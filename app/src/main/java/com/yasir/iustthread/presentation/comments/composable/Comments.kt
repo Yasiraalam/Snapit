@@ -231,7 +231,7 @@ fun CommentsBottomSheet(
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(top = 8.dp, bottom = dynamicBottomPadding)
+                            contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)
                         ) {
                             items(commentsAndUsers.filter { it.first.parentCommentId == null }) { (comment, user) ->
                                 CommentItemWithReplies(
@@ -620,8 +620,7 @@ fun CommentInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .padding(bottom = 24.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // User Avatar
