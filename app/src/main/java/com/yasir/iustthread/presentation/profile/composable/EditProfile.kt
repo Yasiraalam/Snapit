@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.yasir.iustthread.navigation.Routes
@@ -97,7 +98,14 @@ fun EditProfile(navHostController: NavHostController) {
         if (showSuccessDialog) {
             delay(2000) // Show success message for 2 seconds
             showSuccessDialog = false
-            navHostController.navigateUp()
+            // Navigate to the Home screen within the BottomNav
+            navHostController.navigate(Routes.Home.routes) {
+                // Pop up to the start destination (Home) and make it the only destination
+                popUpTo(navHostController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+            }
         }
     }
     
@@ -150,7 +158,14 @@ fun EditProfile(navHostController: NavHostController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { 
-                        navHostController.navigateUp()
+                        // Navigate to the Home screen within the BottomNav
+                        navHostController.navigate(Routes.Home.routes) {
+                            // Pop up to the start destination (Home) and make it the only destination
+                            popUpTo(navHostController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,

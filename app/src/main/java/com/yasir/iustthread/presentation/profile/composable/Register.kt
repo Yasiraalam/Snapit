@@ -96,7 +96,8 @@ fun Register(navHostController: NavHostController) {
     LaunchedEffect(firebaseUser) {
         if (firebaseUser != null) {
             navHostController.navigate(Routes.BottomNav.routes) {
-                popUpTo(navHostController.graph.startDestinationId)
+                // Clear the entire back stack and make BottomNav the new start destination
+                popUpTo(0) { inclusive = true }
                 launchSingleTop = true
             }
         }

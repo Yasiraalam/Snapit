@@ -64,7 +64,8 @@ fun Login(navController: NavHostController) {
     LaunchedEffect(firebaseUser) {
         if (firebaseUser != null) {
             navController.navigate(Routes.BottomNav.routes) {
-                popUpTo(navController.graph.startDestinationId)
+                // Clear the entire back stack and make BottomNav the new start destination
+                popUpTo(0) { inclusive = true }
                 launchSingleTop = true
             }
         }

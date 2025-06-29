@@ -66,10 +66,12 @@ import com.yasir.iustthread.domain.model.Post
 import com.yasir.iustthread.presentation.comments.composable.CommentsBottomSheet
 import com.yasir.iustthread.presentation.home.HomeViewModel
 import com.yasir.iustthread.presentation.home.LoadingState
+import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.utils.SharedPref
 import com.yasir.iustthread.utils.spotlightShimmerEffect
 import com.yasir.iustthread.utils.NavigationUtils
 import com.yasir.iustthread.utils.rememberBottomPadding
+import com.yasir.iustthread.utils.rememberContentBottomPadding
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -82,7 +84,7 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val currentUserId by remember { mutableStateOf(SharedPref.getUserId(context)) }
-    val bottomPadding = rememberBottomPadding()
+    val contentBottomPadding = rememberContentBottomPadding()
     
     val threadsAndUsers by homeViewModel.threadsAndUsers.observeAsState(initial = emptyList())
     val loadingState by homeViewModel.loadingState.observeAsState(initial = LoadingState.LOADING)
@@ -111,12 +113,8 @@ fun HomeScreen(
         }
     }
 
-    // Calculate dynamic bottom padding based on navigation type
-    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
-        80.dp // Standard padding for gesture navigation
-    } else {
-        (80 + bottomPadding).dp // Extra padding for three-button navigation
-    }
+    // Use the standardized content bottom padding
+    val dynamicBottomPadding = contentBottomPadding.dp
 
     Box(
         modifier = Modifier
@@ -130,7 +128,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 8.dp, bottom = dynamicBottomPadding)
                 ) {
-                    items(5) { // Show 5 skeleton posts
+                    items(5) {
                         SkeletonPostCard()
                     }
                 }
@@ -189,7 +187,7 @@ fun HomeScreen(
                                 navController.navigate("add_thread")
                             },
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFE91E63)
+                                containerColor = PinkColor
                             ),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.height(48.dp)
@@ -325,7 +323,7 @@ fun PostCard(
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .background(Color(0xFFE91E63), CircleShape),
+                                .background(PinkColor, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -393,7 +391,7 @@ fun PostCard(
                         Icon(
                             imageVector = if (post.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = if (post.isLiked) Color(0xFFE91E63) else Color(0xFF6B7280),
+                            tint = if (post.isLiked) PinkColor else Color(0xFF6B7280),
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -551,7 +549,7 @@ fun DoubleTapLikeImage(
                             .size(100.dp)
                             .scale(heartScale)
                             .background(
-                                Color(0xFFE91E63).copy(alpha = heartAlpha * 0.8f),
+                                PinkColor.copy(alpha = heartAlpha * 0.8f),
                                 CircleShape
                             )
                             .padding(20.dp)

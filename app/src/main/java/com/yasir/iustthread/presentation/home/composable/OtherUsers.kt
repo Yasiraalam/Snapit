@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
@@ -152,7 +153,16 @@ fun OtherUsers(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { navHostController.navigateUp() }) {
+                IconButton(onClick = { 
+                    // Navigate to the Home screen within the BottomNav
+                    navHostController.navigate(Routes.Home.routes) {
+                        // Pop up to the start destination (Home) and make it the only destination
+                        popUpTo(navHostController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                    }
+                }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",

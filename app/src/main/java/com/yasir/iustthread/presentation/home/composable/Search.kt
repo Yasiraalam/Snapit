@@ -32,6 +32,7 @@ import com.yasir.iustthread.ui.theme.PinkColor
 import com.yasir.iustthread.R
 import com.yasir.iustthread.utils.NavigationUtils
 import com.yasir.iustthread.utils.rememberBottomPadding
+import com.yasir.iustthread.utils.rememberContentBottomPadding
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +45,6 @@ fun Search(
     val searchHistory by searchViewModel.searchHistory.observeAsState(emptyList())
     val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
     val context = LocalContext.current
-    val bottomPadding = rememberBottomPadding()
 
     var search by remember {
         mutableStateOf("")
@@ -84,13 +84,6 @@ fun Search(
             searchViewModel.addSearchQuery(context, search)
             lastSearchedQuery = search
         }
-    }
-
-    // Calculate dynamic bottom padding based on navigation type
-    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
-        96.dp // Standard padding for gesture navigation
-    } else {
-        (96 + bottomPadding).dp // Extra padding for three-button navigation
     }
 
     Column(
@@ -211,7 +204,7 @@ fun Search(
         // Content based on search state
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp, bottom = dynamicBottomPadding)
+            contentPadding = PaddingValues(16.dp)
         ) {
             if (search.isEmpty()) {
                 // Show recent searches and trending when not searching

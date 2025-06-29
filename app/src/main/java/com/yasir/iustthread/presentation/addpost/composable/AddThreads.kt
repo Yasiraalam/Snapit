@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
@@ -54,6 +55,7 @@ import com.yasir.iustthread.ui.theme.gray
 import com.yasir.iustthread.ui.theme.white
 import com.yasir.iustthread.utils.NavigationUtils
 import com.yasir.iustthread.utils.rememberBottomPadding
+import com.yasir.iustthread.utils.rememberContentBottomPadding
 
 @Composable
 fun AddThreads(navHostController: NavHostController) {
@@ -64,7 +66,7 @@ fun AddThreads(navHostController: NavHostController) {
     var thread by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val loading = remember { mutableStateOf(false) }
-    val bottomPadding = rememberBottomPadding()
+    val contentBottomPadding = rememberContentBottomPadding()
     
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
@@ -90,19 +92,20 @@ fun AddThreads(navHostController: NavHostController) {
             thread = ""
             imageUri = null
             Toast.makeText(context, "Thread Posted!", Toast.LENGTH_SHORT).show()
-            navHostController.navigateUp()
+            navHostController.navigate(Routes.Home.routes) {
+                popUpTo(navHostController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+            }
         }
     }
 
-    // Calculate dynamic bottom padding based on navigation type
-    val dynamicBottomPadding = if (NavigationUtils.isGestureNavigation(context)) {
-        96.dp // Standard padding for gesture navigation
-    } else {
-        (96 + bottomPadding).dp // Extra padding for three-button navigation
-    }
+    // Use the standardized content bottom padding
+    val dynamicBottomPadding = contentBottomPadding.dp
 
     Scaffold(
-        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -131,7 +134,9 @@ fun AddThreads(navHostController: NavHostController) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navHostController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navHostController.popBackStack()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
@@ -199,7 +204,7 @@ fun AddThreads(navHostController: NavHostController) {
                 .background(white)
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, bottom = dynamicBottomPadding)
+                .padding(start = 16.dp, end = 16.dp)
         ) {
             // User Profile Section
             Card(
@@ -256,7 +261,7 @@ fun AddThreads(navHostController: NavHostController) {
                 placeholder = {
                     Text(
                         text = "Start a thread...",
-                        color = Black
+                        color = Color.Black
                     )
                 },
                 modifier = Modifier
@@ -314,7 +319,7 @@ fun AddThreads(navHostController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.logo),
                             contentDescription = null,
-                            tint = gray,
+                            tint = Color.Black,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
