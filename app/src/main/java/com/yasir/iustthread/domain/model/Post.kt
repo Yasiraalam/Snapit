@@ -14,5 +14,6 @@ data class Post(
     val shares: Int = 0,
     val isLiked: Boolean = false,
     val isBookmarked: Boolean = false,
-    val likedBy: String = ""
+    val likedBy: String = "",
+    val userId: String? = null
 )
